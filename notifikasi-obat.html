@@ -259,19 +259,20 @@ footer.note{max-width:1100px;margin:6px auto 40px;padding:0 24px;color:var(--mut
 <div class="wrap">
 
   <div id="importPanel" class="import-card" style="display:none">
-    <h2>Muat data pasien</h2>
-    <p>Ambil data dari sheet <b>"obat janji 2026"</b> atau <b>"rekap obat janji"</b> di Google Sheets kamu, lalu tempel di sini.</p>
+    <h2 id="importTitle">Muat data pasien</h2>
+    <p id="importDesc">Ambil data dari sheet <b>"obat janji 2026"</b> atau <b>"rekap obat janji"</b> di Google Sheets kamu, lalu tempel di sini.</p>
     <ol>
       <li>Buka Google Sheets, blok data mulai dari baris header (Name, Nama Obat, Whatsapp Number, dst) sampai baris terakhir</li>
-      <li>Copy (Ctrl+C)</li>
+      <li>Copy (Ctrl+C) — boleh blok ulang <b>seluruh data</b> termasuk pasien yang baru diinput hari ini</li>
       <li>Paste (Ctrl+V) ke kotak di bawah ini</li>
     </ol>
     <textarea id="importText" placeholder="Tempel data (termasuk baris header) di sini..."></textarea>
     <div class="import-row">
-      <button class="btn-primary" id="btnLoadPaste">Muat Data</button>
+      <button class="btn-primary" id="btnLoadPaste">Gabungkan &amp; Muat Data</button>
       <label class="file-label" for="csvFile">atau unggah file .csv</label>
       <input type="file" id="csvFile" accept=".csv" style="display:none">
     </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Data baru akan <b>digabung</b> dengan data yang sudah ada — status "Terkirim" pasien lama tidak akan hilang. Ingin mulai dari nol? Pakai tombol <b>Reset</b> di pojok kanan atas.</p>
     <div class="import-msg" id="importMsg"></div>
   </div>
 
@@ -340,6 +341,7 @@ async function loadState(){
   try{
     const r = await window.storage.get('obat-janji-patients', false);
     if(r && r.value) patients = JSON.parse(r.value);
+    patients.forEach(p => { if(!p.key) p.key = normHeader(p.rm) + '|' + normHeader(p.nama) + '|' + normHeader(p.obat); });
   }catch(e){ patients = []; }
   try{
     const r = await window.storage.get('obat-janji-settings', false);
@@ -398,6 +400,7 @@ function normalizePhone(raw){
 
 function importData(text){
   const msgEl = el('importMsg');
+  msgEl.style.color = '';
   if(!text || !text.trim()){ msgEl.textContent = 'Belum ada data yang ditempel.'; return; }
   const delim = text.split('\n')[0].includes('\t') ? '\t' : ',';
   const rows = parseDelim(text, delim);
@@ -416,31 +419,48 @@ function importData(text){
     msgEl.textContent = 'Kolom "Name" dan "Whatsapp Number" tidak ditemukan. Pastikan header data sesuai.';
     return;
   }
-  const newPatients = [];
+  const existingByKey = {};
+  for(const p of patients) existingByKey[p.key] = p;
+
+  let addedCount = 0, updatedCount = 0;
   for(let i=1;i<rows.length;i++){
     const r = rows[i];
     const nama = (r[idx.name]||'').trim();
     if(!nama) continue;
-    newPatients.push({
-      id: 'p'+i+'-'+Date.now()+Math.floor(Math.random()*1000),
-      rm: idx.rm>-1 ? (r[idx.rm]||'').trim() : '',
+    const rm = idx.rm>-1 ? (r[idx.rm]||'').trim() : '';
+    const obat = idx.obat>-1 ? (r[idx.obat]||'').trim() : '';
+    const key = normHeader(rm) + '|' + normHeader(nama) + '|' + normHeader(obat);
+    const fresh = {
+      rm,
       nama,
-      obat: idx.obat>-1 ? (r[idx.obat]||'').trim() : '',
+      obat,
       signa: idx.signa>-1 ? (r[idx.signa]||'').trim() : '',
       waRaw: idx.wa>-1 ? (r[idx.wa]||'').trim() : '',
       wa: normalizePhone(idx.wa>-1 ? r[idx.wa] : ''),
       poli: idx.poli>-1 ? (r[idx.poli]||'').trim() : '',
-      tgl: idx.tgl>-1 ? (r[idx.tgl]||'').trim() : '',
-      sent: false,
-      sentAt: null
-    });
+      tgl: idx.tgl>-1 ? (r[idx.tgl]||'').trim() : ''
+    };
+    if(existingByKey[key]){
+      // sudah ada: perbarui datanya, PERTAHANKAN status terkirim
+      Object.assign(existingByKey[key], fresh);
+      updatedCount++;
+    } else {
+      const p = { id: 'p'+i+'-'+Date.now()+Math.floor(Math.random()*1000), key, sent:false, sentAt:null, ...fresh };
+      patients.push(p);
+      existingByKey[key] = p;
+      addedCount++;
+    }
   }
-  if(newPatients.length === 0){ msgEl.textContent = 'Tidak ada baris pasien valid ditemukan.'; return; }
-  patients = newPatients;
+  if(addedCount===0 && updatedCount===0){ msgEl.textContent = 'Tidak ada baris pasien valid ditemukan.'; return; }
   savePatients();
   msgEl.textContent = '';
   el('importText').value = '';
+  el('csvFile').value = '';
+  el('mainPanel').style.display = 'block';
+  el('importPanel').style.display = 'none';
   render();
+  msgEl.textContent = `Berhasil: ${addedCount} pasien baru ditambahkan, ${updatedCount} pasien diperbarui (status terkirim tetap terjaga).`;
+  msgEl.style.color = '#1F6B2C';
 }
 
 function buildMessage(p){
