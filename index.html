@@ -299,10 +299,11 @@ async function bootMain(){
 }
 
 async function refreshAll(){
-  const [pRes, oRes, gRes] = await Promise.all([apiGet('getPatients'), apiGet('getObatList'), apiGet('getPetugasList')]);
+  const [pRes, oRes, gRes, cRes] = await Promise.all([apiGet('getPatients'), apiGet('getObatList'), apiGet('getPetugasList'), apiGet('getClosingText')]);
   if(pRes.ok) patients = pRes.data; else alert('Gagal memuat data pasien: ' + pRes.error);
   if(oRes.ok){ obatList = oRes.data; el('obatCount').textContent = '('+obatList.length+' obat)'; }
   if(gRes.ok){ petugasList = gRes.data; }
+  if(cRes.ok){ cfg.closing = cRes.data; } // selalu pakai teks U1 terbaru dari Sheets, bukan cache lokal
   el('fPetugasAktif').value = cfg.petugasAktif || '';
   el('fPetugasServahAktif').value = cfg.petugasServahAktif || '';
   render();
