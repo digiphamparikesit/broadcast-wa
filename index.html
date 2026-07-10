@@ -3,281 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Papan Notifikasi Obat — Farmasi</title>
+<title>Notifikasi Obat — Farmasi RSUD AM Parikesit</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
-
 :root{
-  --bg:#F3F6F5;
-  --ink:#16221F;
-  --teal:#0B4F4A;
-  --teal-dark:#08312E;
-  --amber:#E8A33D;
-  --amber-ink:#5A3A0A;
-  --stamp:#B23A2E;
-  --card:#FFFFFF;
-  --line:#DCE5E2;
-  --muted:#5C6B67;
+  --bg:#F3F6F5; --ink:#16221F; --teal:#0B4F4A; --teal-dark:#08312E;
+  --amber:#E8A33D; --amber-ink:#5A3A0A; --stamp:#B23A2E; --card:#FFFFFF;
+  --line:#DCE5E2; --muted:#5C6B67;
 }
 *{box-sizing:border-box;}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:'Inter',system-ui,sans-serif;
-  min-height:100vh;
-}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;}
 h1,h2,h3,.display{font-family:'Space Grotesk',system-ui,sans-serif;}
 .mono{font-family:'IBM Plex Mono',monospace;}
-
-.topbar{
-  background:var(--teal-dark);
-  color:#EAF3F1;
-  padding:18px 24px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:16px;
-  align-items:center;
-  justify-content:space-between;
-  border-bottom:4px solid var(--amber);
-}
-.topbar h1{margin:0;font-size:1.15rem;font-weight:600;letter-spacing:.2px;}
+.topbar{background:var(--teal-dark);color:#EAF3F1;padding:18px 24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;border-bottom:4px solid var(--amber);}
+.topbar h1{margin:0;font-size:1.15rem;font-weight:600;}
 .topbar .sub{font-size:.75rem;color:#9FC1BC;margin-top:2px;}
 .stats-strip{display:flex;gap:22px;}
 .stat{text-align:center;}
-.stat b{display:block;font-family:'Space Grotesk';font-size:1.3rem;line-height:1.1;}
+.stat b{display:block;font-family:'Space Grotesk';font-size:1.3rem;}
 .stat span{font-size:.68rem;color:#9FC1BC;text-transform:uppercase;letter-spacing:.06em;}
 .actions{display:flex;gap:8px;flex-wrap:wrap;}
-button{
-  font-family:'Inter';
-  cursor:pointer;
-  border:none;
-  border-radius:8px;
-  font-weight:600;
-  font-size:.82rem;
-}
-.btn-ghost{
-  background:transparent;
-  color:#EAF3F1;
-  border:1px solid #2C5C57;
-  padding:8px 12px;
-}
+button{font-family:'Inter';cursor:pointer;border:none;border-radius:8px;font-weight:600;font-size:.82rem;}
+.btn-ghost{background:transparent;color:#EAF3F1;border:1px solid #2C5C57;padding:8px 12px;}
 .btn-ghost:hover{background:#123E38;}
-
-.wrap{max-width:1100px;margin:0 auto;padding:24px;}
-
-/* ---- import panel ---- */
-.import-card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:28px;
-  max-width:680px;
-  margin:40px auto;
+.wrap{max-width:1150px;margin:0 auto;padding:24px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;}
+.setup-card{max-width:640px;margin:40px auto;}
+.setup-card h2{margin:0 0 6px;font-size:1.2rem;}
+.setup-card p{color:var(--muted);font-size:.85rem;line-height:1.55;}
+.setup-card ol{color:var(--muted);font-size:.83rem;line-height:1.7;padding-left:20px;}
+label{display:block;font-size:.78rem;font-weight:600;margin:14px 0 5px;}
+input[type=text],input[type=password],input[type=number],input[type=date],textarea,select{
+  width:100%;border:1.5px solid var(--line);border-radius:8px;padding:9px 11px;font-family:'Inter';font-size:.85rem;
 }
-.import-card h2{margin:0 0 6px;font-size:1.2rem;}
-.import-card p{color:var(--muted);font-size:.88rem;line-height:1.5;}
-.import-card ol{color:var(--muted);font-size:.85rem;line-height:1.7;padding-left:20px;}
-textarea{
-  width:100%;
-  min-height:130px;
-  border:1.5px solid var(--line);
-  border-radius:10px;
-  padding:12px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.78rem;
-  resize:vertical;
-  margin-top:10px;
-}
-.import-row{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;}
-.btn-primary{
-  background:var(--amber);
-  color:var(--amber-ink);
-  padding:10px 18px;
-  border-radius:8px;
-}
+textarea{font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.btn-primary{background:var(--amber);color:var(--amber-ink);padding:10px 18px;border-radius:8px;}
 .btn-primary:hover{filter:brightness(1.05);}
-.file-label{
-  border:1.5px dashed var(--line);
-  padding:9px 14px;
-  border-radius:8px;
-  color:var(--muted);
-  font-size:.82rem;
-  cursor:pointer;
-}
-.file-label:hover{border-color:var(--teal);color:var(--teal);}
-.import-msg{font-size:.8rem;margin-top:10px;color:var(--stamp);}
+.btn-outline{background:#fff;border:1.5px solid var(--line);color:var(--ink);padding:9px 14px;border-radius:8px;}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+.status-msg{font-size:.8rem;margin-top:10px;}
+.status-ok{color:#1F6B2C;}
+.status-err{color:var(--stamp);}
 
-/* ---- queue board ---- */
-.queue-board{
-  background:var(--teal-dark);
-  color:#EAF3F1;
-  border-radius:16px;
-  padding:22px 26px;
-  position:relative;
-  overflow:hidden;
-  margin-bottom:20px;
-}
-.queue-board::before{
-  content:"";
-  position:absolute;
-  right:-40px;top:-40px;
-  width:180px;height:180px;
-  background:radial-gradient(circle, rgba(232,163,61,.18), transparent 70%);
-}
+.queue-board{background:var(--teal-dark);color:#EAF3F1;border-radius:16px;padding:22px 26px;position:relative;overflow:hidden;margin-bottom:20px;}
 .queue-eyebrow{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:600;}
 .queue-name{font-family:'Space Grotesk';font-size:1.6rem;margin:4px 0 2px;}
 .queue-meta{color:#9FC1BC;font-size:.85rem;}
-.queue-obat{margin-top:12px;font-size:.95rem;line-height:1.5;}
-.queue-obat b{color:#fff;}
+.queue-obat{margin-top:12px;font-size:.95rem;}
 .queue-wa{font-family:'IBM Plex Mono';color:#BFE0DA;font-size:.85rem;margin-top:4px;}
 .queue-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
-.btn-send{
-  background:#25D366;
-  color:#04331A;
-  padding:12px 20px;
-  border-radius:10px;
-  font-size:.95rem;
-  display:flex;align-items:center;gap:8px;
-}
-.btn-send:hover{filter:brightness(1.06);}
-.btn-skip{
-  background:transparent;
-  border:1px solid #2C5C57;
-  color:#BFE0DA;
-  padding:12px 16px;
-  border-radius:10px;
-}
-.btn-skip:hover{background:#123E38;}
-.queue-empty{text-align:center;padding:20px 0;}
-.queue-empty .display{font-size:1.3rem;color:var(--amber);}
-.queue-empty p{color:#9FC1BC;font-size:.85rem;}
+.btn-send{background:#25D366;color:#04331A;padding:12px 20px;border-radius:10px;font-size:.95rem;}
+.btn-skip{background:transparent;border:1px solid #2C5C57;color:#BFE0DA;padding:12px 16px;border-radius:10px;}
 .queue-count{position:absolute;right:22px;top:20px;text-align:right;}
 .queue-count b{font-family:'Space Grotesk';font-size:1.4rem;}
 .queue-count span{display:block;font-size:.68rem;color:#9FC1BC;text-transform:uppercase;}
+.queue-empty{text-align:center;padding:20px 0;}
+.queue-empty .display{font-size:1.3rem;color:var(--amber);}
+.queue-empty p{color:#9FC1BC;font-size:.85rem;}
 
-/* ---- toolbar ---- */
+details.addform{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:20px;}
+details.addform summary{padding:14px 20px;cursor:pointer;font-weight:600;}
+.addform-body{padding:0 20px 20px;}
+.autocomplete{position:relative;}
+.ac-list{position:absolute;z-index:20;background:#fff;border:1px solid var(--line);border-radius:8px;max-height:220px;overflow:auto;width:100%;box-shadow:0 8px 20px rgba(0,0,0,.08);display:none;}
+.ac-list div{padding:8px 12px;font-size:.83rem;cursor:pointer;}
+.ac-list div:hover{background:#EEF3F1;}
+
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
-.search-input{
-  flex:1;min-width:200px;
-  padding:9px 12px;
-  border:1.5px solid var(--line);
-  border-radius:8px;
-  font-size:.85rem;
-  font-family:'Inter';
-}
-select{
-  padding:9px 10px;border-radius:8px;border:1.5px solid var(--line);
-  font-family:'Inter';font-size:.85rem;background:#fff;
-}
-.btn-outline{
-  background:#fff;border:1.5px solid var(--line);color:var(--ink);
-  padding:9px 14px;border-radius:8px;
-}
-.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
-
-/* ---- table ---- */
+.search-input{flex:1;min-width:200px;}
 .table-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
 table{width:100%;border-collapse:collapse;font-size:.83rem;}
-thead th{
-  text-align:left;padding:10px 14px;background:#EEF3F1;color:var(--muted);
-  font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600;
-  position:sticky;top:0;
-}
+thead th{text-align:left;padding:10px 14px;background:#EEF3F1;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;}
 tbody tr{border-top:1px solid var(--line);}
 tbody tr.sent{background:#FAFAF8;}
 td{padding:10px 14px;vertical-align:top;}
 .pname{font-weight:600;}
 .psub{color:var(--muted);font-size:.76rem;margin-top:2px;}
-.pobat{font-weight:500;}
-.psigna{color:var(--muted);font-size:.76rem;}
 .pwa{font-family:'IBM Plex Mono';font-size:.78rem;color:var(--muted);}
-.status-pill{
-  display:inline-block;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;
-}
+.status-pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;}
 .status-pending{background:#FDF0DC;color:var(--amber-ink);}
-.status-sent{background:#E9F5E9;color:#1F6B2C;}
-.row-actions{display:flex;gap:6px;flex-wrap:wrap;}
-.btn-mini{
-  padding:6px 10px;font-size:.75rem;border-radius:6px;
-}
+.stamp{display:inline-block;border:2px solid var(--stamp);color:var(--stamp);font-family:'Space Grotesk';font-weight:700;font-size:.65rem;padding:2px 8px;border-radius:4px;transform:rotate(-4deg);}
+.btn-mini{padding:6px 10px;font-size:.75rem;border-radius:6px;}
 .btn-mini.wa{background:#25D366;color:#04331A;}
 .btn-mini.undo{background:transparent;border:1px solid var(--line);color:var(--muted);}
-.stamp{
-  display:inline-block;border:2px solid var(--stamp);color:var(--stamp);
-  font-family:'Space Grotesk';font-weight:700;font-size:.65rem;
-  padding:2px 8px;border-radius:4px;transform:rotate(-4deg);
-  letter-spacing:.05em;
-}
 .empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
-
-/* ---- modal ---- */
-.modal-bg{
-  position:fixed;inset:0;background:rgba(8,20,18,.5);
-  display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
-}
-.modal-bg.show{display:flex;}
-.modal{
-  background:#fff;border-radius:14px;padding:26px;max-width:560px;width:100%;
-  max-height:85vh;overflow:auto;
-}
-.modal h3{margin:0 0 4px;}
-.modal p{color:var(--muted);font-size:.82rem;line-height:1.5;}
-.modal label{display:block;font-size:.78rem;font-weight:600;margin:14px 0 4px;color:var(--ink);}
-.modal textarea, .modal input[type=text]{
-  width:100%;border:1.5px solid var(--line);border-radius:8px;padding:10px;
-  font-family:'Inter';font-size:.85rem;
-}
-.modal .placeholders{font-size:.72rem;color:var(--muted);margin-top:4px;}
-.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
-.hint-badge{
-  font-size:.65rem;background:#EEF3F1;color:var(--muted);padding:2px 8px;border-radius:10px;margin-left:6px;
-}
-footer.note{max-width:1100px;margin:6px auto 40px;padding:0 24px;color:var(--muted);font-size:.75rem;}
-@media(max-width:640px){
-  .stats-strip{gap:12px;}
-  .queue-count{position:static;margin-top:10px;text-align:left;}
-}
+.hint{font-size:.72rem;color:var(--muted);margin-top:4px;}
+footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--muted);font-size:.75rem;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div>
-    <h1>Papan Notifikasi Obat</h1>
-    <div class="sub">Farmasi Rawat Jalan — RSUD AM Parikesit</div>
-  </div>
+  <div><h1>Notifikasi Obat Janji</h1><div class="sub">Farmasi Rawat Jalan — RSUD AM Parikesit · terhubung Google Sheets</div></div>
   <div class="stats-strip" id="statsStrip"></div>
   <div class="actions">
-    <button class="btn-ghost" id="btnSettings">Pesan Template</button>
-    <button class="btn-ghost" id="btnExport">Ekspor CSV</button>
-    <button class="btn-ghost" id="btnImportAgain">Impor Data</button>
-    <button class="btn-ghost" id="btnReset">Reset</button>
+    <button class="btn-ghost" id="btnSettings">Pengaturan</button>
+    <button class="btn-ghost" id="btnRefresh">Segarkan Data</button>
   </div>
 </div>
 
 <div class="wrap">
 
-  <div id="importPanel" class="import-card" style="display:none">
-    <h2 id="importTitle">Muat data pasien</h2>
-    <p id="importDesc">Ambil data dari sheet <b>"obat janji 2026"</b> atau <b>"rekap obat janji"</b> di Google Sheets kamu, lalu tempel di sini.</p>
-    <ol>
-      <li>Buka Google Sheets, blok data mulai dari baris header (Name, Nama Obat, Whatsapp Number, dst) sampai baris terakhir</li>
-      <li>Copy (Ctrl+C) — boleh blok ulang <b>seluruh data</b> termasuk pasien yang baru diinput hari ini</li>
-      <li>Paste (Ctrl+V) ke kotak di bawah ini</li>
-    </ol>
-    <textarea id="importText" placeholder="Tempel data (termasuk baris header) di sini..."></textarea>
-    <div class="import-row">
-      <button class="btn-primary" id="btnLoadPaste">Gabungkan &amp; Muat Data</button>
-      <label class="file-label" for="csvFile">atau unggah file .csv</label>
-      <input type="file" id="csvFile" accept=".csv" style="display:none">
+  <div id="setupPanel" class="card setup-card">
+    <h2>Hubungkan ke Google Sheets</h2>
+    <p>Tempel URL Web App dan token dari Apps Script yang sudah kamu deploy. Lihat instruksi lengkap di file <span class="mono">Code.gs</span> yang saya berikan.</p>
+    <label>URL Web App Apps Script</label>
+    <input type="text" id="cfgUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+    <label>Token</label>
+    <input type="password" id="cfgToken" placeholder="token dari fungsi setupToken()">
+    <div style="margin-top:16px;display:flex;gap:10px;">
+      <button class="btn-primary" id="btnTest">Uji Koneksi &amp; Simpan</button>
     </div>
-    <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Data baru akan <b>digabung</b> dengan data yang sudah ada — status "Terkirim" pasien lama tidak akan hilang. Ingin mulai dari nol? Pakai tombol <b>Reset</b> di pojok kanan atas.</p>
-    <div class="import-msg" id="importMsg"></div>
+    <div class="status-msg" id="setupMsg"></div>
   </div>
 
   <div id="mainPanel" style="display:none">
     <div class="queue-board" id="queueBoard"></div>
+
+    <details class="addform">
+      <summary>+ Tambah pasien obat janji baru</summary>
+      <div class="addform-body">
+        <div class="row2">
+          <div><label>Nama pasien</label><input type="text" id="fName"></div>
+          <div><label>No. RM</label><input type="text" id="fRM"></div>
+        </div>
+        <div class="row2">
+          <div class="autocomplete">
+            <label>Nama obat <span class="hint" id="obatCount"></span></label>
+            <input type="text" id="fObat" placeholder="Ketik untuk mencari dari daftar obat...">
+            <div class="ac-list" id="acList"></div>
+          </div>
+          <div><label>Signa / aturan pakai</label><input type="text" id="fSigna" placeholder="mis. 1X1"></div>
+        </div>
+        <div class="row2">
+          <div><label>Jml resep</label><input type="number" id="fJmlResep"></div>
+          <div><label>Jml diberikan (boleh kosong)</label><input type="number" id="fJmlDiberikan"></div>
+        </div>
+        <div class="row2">
+          <div><label>No. WhatsApp</label><input type="text" id="fWA" placeholder="08xxxxxxxxxx"></div>
+          <div><label>Asal poli</label><input type="text" id="fPoli"></div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn-primary" id="btnAddPatient">Simpan ke Google Sheets</button>
+        </div>
+        <div class="status-msg" id="addMsg"></div>
+      </div>
+    </details>
 
     <div class="toolbar">
       <input type="text" class="search-input" id="searchInput" placeholder="Cari nama pasien atau No. RM...">
@@ -288,379 +160,212 @@ footer.note{max-width:1100px;margin:6px auto 40px;padding:0 24px;color:var(--mut
       </select>
       <button class="btn-outline" id="btnClearFilter">Bersihkan filter</button>
     </div>
-
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Pasien</th>
-            <th>Obat</th>
-            <th>No. WA</th>
-            <th>Poli / Tanggal</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Pasien</th><th>Obat</th><th>No. WA</th><th>Poli / Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody id="tableBody"></tbody>
       </table>
-      <div class="empty-state" id="emptyState" style="display:none">Tidak ada data yang cocok dengan pencarian/filter.</div>
+      <div class="empty-state" id="emptyState" style="display:none">Tidak ada data yang cocok.</div>
     </div>
   </div>
-
 </div>
-
 <footer class="note" id="footerNote"></footer>
 
-<div class="modal-bg" id="settingsModal">
-  <div class="modal">
-    <h3>Template Pesan WhatsApp</h3>
-    <p>Isi pesan otomatis terisi memakai data pasien. Placeholder yang bisa dipakai: <span class="mono">{nama}</span>, <span class="mono">{obat}</span>, <span class="mono">{signa}</span>, <span class="mono">{closing}</span></p>
-    <label>Pola pesan pembuka</label>
-    <textarea id="tplPattern" rows="4"></textarea>
-    <label>Teks penutup (mis. lokasi & jam pengambilan) <span class="hint-badge">terisi ke {closing}</span></label>
-    <textarea id="tplClosing" rows="5"></textarea>
-    <div class="placeholders" id="previewBox"></div>
-    <div class="modal-actions">
-      <button class="btn-outline" id="btnCloseSettings">Batal</button>
-      <button class="btn-primary" id="btnSaveSettings">Simpan</button>
-    </div>
-  </div>
-</div>
-
 <script>
-const DEFAULT_PATTERN = "Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}";
-const DEFAULT_CLOSING = "sudah tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. 🙏🏾";
-
+const el = id => document.getElementById(id);
+let cfg = { url:'', token:'', pattern:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}",
+  closing:"sudah tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
 let patients = [];
-let settings = { pattern: DEFAULT_PATTERN, closing: DEFAULT_CLOSING };
-let queueSkipOrder = [];
+let obatList = [];
 
-const el = (id) => document.getElementById(id);
-
-async function loadState(){
+function loadCfg(){
   try{
-    const r = await window.storage.get('obat-janji-patients', false);
-    if(r && r.value) patients = JSON.parse(r.value);
-    patients.forEach(p => { if(!p.key) p.key = normHeader(p.rm) + '|' + normHeader(p.nama) + '|' + normHeader(p.obat); });
-  }catch(e){ patients = []; }
+    const raw = localStorage.getItem('farmasi-app-cfg');
+    if(raw) cfg = Object.assign(cfg, JSON.parse(raw));
+  }catch(e){ /* localStorage tidak tersedia (mis. dibuka di dalam preview Claude.ai) */ }
+}
+function saveCfg(){
+  try{ localStorage.setItem('farmasi-app-cfg', JSON.stringify(cfg)); }catch(e){}
+}
+
+async function apiGet(action, extra){
+  const params = new URLSearchParams(Object.assign({ action, token: cfg.token }, extra||{}));
+  const res = await fetch(cfg.url + '?' + params.toString());
+  return res.json();
+}
+async function apiPost(action, data){
+  const res = await fetch(cfg.url, {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // hindari CORS preflight
+    body: JSON.stringify({ action, token: cfg.token, data })
+  });
+  return res.json();
+}
+
+async function testConnection(){
+  const url = el('cfgUrl').value.trim();
+  const token = el('cfgToken').value.trim();
+  const msg = el('setupMsg');
+  msg.className = 'status-msg';
+  if(!url || !token){ msg.textContent = 'Isi URL dan token dulu.'; msg.classList.add('status-err'); return; }
+  cfg.url = url; cfg.token = token;
+  msg.textContent = 'Menguji koneksi...';
   try{
-    const r = await window.storage.get('obat-janji-settings', false);
-    if(r && r.value) settings = JSON.parse(r.value);
-  }catch(e){ /* keep defaults */ }
-  render();
-}
-
-async function savePatients(){
-  try{ await window.storage.set('obat-janji-patients', JSON.stringify(patients), false); }
-  catch(e){ console.error('Gagal menyimpan data pasien', e); }
-}
-async function saveSettings(){
-  try{ await window.storage.set('obat-janji-settings', JSON.stringify(settings), false); }
-  catch(e){ console.error('Gagal menyimpan pengaturan', e); }
-}
-
-function normHeader(h){ return (h||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-function findCol(headers, subs){
-  for(let i=0;i<headers.length;i++){
-    const h = normHeader(headers[i]);
-    if(subs.some(s => h.includes(s))) return i;
-  }
-  return -1;
-}
-function parseDelim(text, delim){
-  const rows = [];
-  const lines = text.split(/\r\n|\n/).filter(l => l.trim().length>0);
-  for(const line of lines){
-    if(delim === ','){
-      const out = []; let cur=''; let inQ=false;
-      for(let i=0;i<line.length;i++){
-        const c = line[i];
-        if(c === '"'){ inQ = !inQ; continue; }
-        if(c === ',' && !inQ){ out.push(cur); cur=''; continue; }
-        cur += c;
-      }
-      out.push(cur);
-      rows.push(out);
+    const r = await apiGet('ping');
+    if(r.ok){
+      msg.textContent = 'Berhasil terhubung!';
+      msg.classList.add('status-ok');
+      saveCfg();
+      await bootMain();
     } else {
-      rows.push(line.split('\t'));
+      msg.textContent = 'Gagal: ' + r.error;
+      msg.classList.add('status-err');
     }
+  }catch(e){
+    msg.textContent = 'Gagal menghubungi server. Cek URL Web App & pastikan deployment "Anyone" sudah aktif. (' + e.message + ')';
+    msg.classList.add('status-err');
   }
-  return rows;
-}
-function normalizePhone(raw){
-  if(!raw) return '';
-  let s = String(raw).trim();
-  if(/^[\d.]+e\+?\d+$/i.test(s)) s = Number(s).toFixed(0);
-  s = s.replace(/[^\d]/g,'');
-  if(!s) return '';
-  if(s.startsWith('0')) s = '62' + s.slice(1);
-  else if(!s.startsWith('62')) s = '62' + s;
-  return s;
 }
 
-function importData(text){
-  const msgEl = el('importMsg');
-  msgEl.style.color = '';
-  if(!text || !text.trim()){ msgEl.textContent = 'Belum ada data yang ditempel.'; return; }
-  const delim = text.split('\n')[0].includes('\t') ? '\t' : ',';
-  const rows = parseDelim(text, delim);
-  if(rows.length < 2){ msgEl.textContent = 'Data tidak terbaca. Pastikan menyertakan baris header.'; return; }
-  const headers = rows[0];
-  const idx = {
-    rm: findCol(headers,['norm','rm']),
-    name: findCol(headers,['name','nama']),
-    obat: findCol(headers,['namaobat','obat']),
-    signa: findCol(headers,['signa']),
-    wa: findCol(headers,['whatsapp','nowa','nohp','notelp']),
-    poli: findCol(headers,['asalpoli','poli']),
-    tgl: findCol(headers,['tglresep','tanggalresep'])
-  };
-  if(idx.name === -1 || idx.wa === -1){
-    msgEl.textContent = 'Kolom "Name" dan "Whatsapp Number" tidak ditemukan. Pastikan header data sesuai.';
-    return;
-  }
-  const existingByKey = {};
-  for(const p of patients) existingByKey[p.key] = p;
-
-  let addedCount = 0, updatedCount = 0;
-  for(let i=1;i<rows.length;i++){
-    const r = rows[i];
-    const nama = (r[idx.name]||'').trim();
-    if(!nama) continue;
-    const rm = idx.rm>-1 ? (r[idx.rm]||'').trim() : '';
-    const obat = idx.obat>-1 ? (r[idx.obat]||'').trim() : '';
-    const key = normHeader(rm) + '|' + normHeader(nama) + '|' + normHeader(obat);
-    const fresh = {
-      rm,
-      nama,
-      obat,
-      signa: idx.signa>-1 ? (r[idx.signa]||'').trim() : '',
-      waRaw: idx.wa>-1 ? (r[idx.wa]||'').trim() : '',
-      wa: normalizePhone(idx.wa>-1 ? r[idx.wa] : ''),
-      poli: idx.poli>-1 ? (r[idx.poli]||'').trim() : '',
-      tgl: idx.tgl>-1 ? (r[idx.tgl]||'').trim() : ''
-    };
-    if(existingByKey[key]){
-      // sudah ada: perbarui datanya, PERTAHANKAN status terkirim
-      Object.assign(existingByKey[key], fresh);
-      updatedCount++;
-    } else {
-      const p = { id: 'p'+i+'-'+Date.now()+Math.floor(Math.random()*1000), key, sent:false, sentAt:null, ...fresh };
-      patients.push(p);
-      existingByKey[key] = p;
-      addedCount++;
-    }
-  }
-  if(addedCount===0 && updatedCount===0){ msgEl.textContent = 'Tidak ada baris pasien valid ditemukan.'; return; }
-  savePatients();
-  msgEl.textContent = '';
-  el('importText').value = '';
-  el('csvFile').value = '';
+async function bootMain(){
+  el('setupPanel').style.display = 'none';
   el('mainPanel').style.display = 'block';
-  el('importPanel').style.display = 'none';
-  render();
-  msgEl.textContent = `Berhasil: ${addedCount} pasien baru ditambahkan, ${updatedCount} pasien diperbarui (status terkirim tetap terjaga).`;
-  msgEl.style.color = '#1F6B2C';
+  await refreshAll();
 }
 
-function buildMessage(p){
-  return settings.pattern
-    .replaceAll('{nama}', p.nama)
-    .replaceAll('{obat}', p.obat)
-    .replaceAll('{signa}', p.signa)
-    .replaceAll('{closing}', settings.closing);
-}
-function waLink(p){
-  return 'https://api.whatsapp.com/send?phone=' + encodeURIComponent(p.wa) + '&text=' + encodeURIComponent(buildMessage(p));
-}
-
-function markSent(id){
-  const p = patients.find(x=>x.id===id);
-  if(!p) return;
-  p.sent = true;
-  p.sentAt = new Date().toISOString();
-  savePatients();
-  render();
-}
-function undoSent(id){
-  const p = patients.find(x=>x.id===id);
-  if(!p) return;
-  p.sent = false;
-  p.sentAt = null;
-  savePatients();
-  render();
-}
-function sendAndMark(id){
-  const p = patients.find(x=>x.id===id);
-  if(!p) return;
-  window.open(waLink(p), '_blank');
-  markSent(id);
-}
-function skipQueue(id){
-  const i = patients.findIndex(x=>x.id===id);
-  if(i===-1) return;
-  const [item] = patients.splice(i,1);
-  patients.push(item);
-  savePatients();
+async function refreshAll(){
+  const [pRes, oRes] = await Promise.all([apiGet('getPatients'), apiGet('getObatList')]);
+  if(pRes.ok) patients = pRes.data; else alert('Gagal memuat data pasien: ' + pRes.error);
+  if(oRes.ok){ obatList = oRes.data; el('obatCount').textContent = '('+obatList.length+' obat)'; }
   render();
 }
 
-function fmtDate(str){
-  if(!str) return '';
-  return str;
-}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function buildMessage(p){ return cfg.pattern.replaceAll('{nama}',p.name).replaceAll('{obat}',p.obat).replaceAll('{signa}',p.signa||'').replaceAll('{closing}',cfg.closing); }
+function waLink(p){ return 'https://api.whatsapp.com/send?phone='+encodeURIComponent(p.wa)+'&text='+encodeURIComponent(buildMessage(p)); }
+function isSent(p){ return !!p.dihubungi; }
 
+function renderStats(){
+  const total = patients.length, sent = patients.filter(isSent).length;
+  el('statsStrip').innerHTML = total ? `<div class="stat"><b>${total}</b><span>Total</span></div><div class="stat"><b>${sent}</b><span>Terkirim</span></div><div class="stat"><b>${total-sent}</b><span>Menunggu</span></div>` : '';
+}
 function renderQueue(){
   const board = el('queueBoard');
-  const pending = patients.filter(p=>!p.sent);
+  const pending = patients.filter(p=>!isSent(p));
   const sentCount = patients.length - pending.length;
-  if(patients.length === 0){ board.innerHTML=''; return; }
-  if(pending.length === 0){
-    board.innerHTML = `
-      <div class="queue-count"><b>${sentCount}/${patients.length}</b><span>terkirim</span></div>
-      <div class="queue-empty">
-        <div class="display">✓ Semua pasien sudah dinotifikasi</div>
-        <p>Tidak ada antrian tersisa untuk hari ini.</p>
-      </div>`;
+  if(pending.length===0){
+    board.innerHTML = `<div class="queue-count"><b>${sentCount}/${patients.length||0}</b><span>terkirim</span></div><div class="queue-empty"><div class="display">\u2713 Semua pasien sudah dinotifikasi</div><p>Tidak ada antrian tersisa.</p></div>`;
     return;
   }
   const p = pending[0];
-  board.innerHTML = `
-    <div class="queue-count"><b>${sentCount}/${patients.length}</b><span>terkirim</span></div>
+  board.innerHTML = `<div class="queue-count"><b>${sentCount}/${patients.length}</b><span>terkirim</span></div>
     <div class="queue-eyebrow">Antrian berikutnya</div>
-    <div class="queue-name">${escapeHtml(p.nama)}</div>
-    <div class="queue-meta">${p.rm ? 'No. RM '+escapeHtml(p.rm) : ''} ${p.poli ? '· '+escapeHtml(p.poli):''} ${p.tgl ? '· '+escapeHtml(p.tgl):''}</div>
-    <div class="queue-obat"><b>${escapeHtml(p.obat)}</b>${p.signa ? ' — '+escapeHtml(p.signa) : ''}</div>
-    <div class="queue-wa">${p.wa ? '+'+p.wa : 'Nomor WA tidak ditemukan'}</div>
+    <div class="queue-name">${escapeHtml(p.name)}</div>
+    <div class="queue-meta">${p.rm?'No. RM '+escapeHtml(p.rm):''} ${p.poli?'· '+escapeHtml(p.poli):''} ${p.tgl?'· '+escapeHtml(p.tgl):''}</div>
+    <div class="queue-obat"><b>${escapeHtml(p.obat)}</b>${p.signa?' — '+escapeHtml(p.signa):''}</div>
+    <div class="queue-wa">${p.wa?'+'+p.wa:'Nomor WA tidak ditemukan'}</div>
     <div class="queue-actions">
-      <button class="btn-send" data-send="${p.id}" ${!p.wa?'disabled':''}>Kirim WhatsApp</button>
-      <button class="btn-skip" data-skip="${p.id}">Lewati dulu</button>
-    </div>
-  `;
+      <button class="btn-send" data-send="${p.row}" ${!p.wa?'disabled':''}>Kirim WhatsApp</button>
+      <button class="btn-skip" data-skip="${p.row}">Lewati dulu</button>
+    </div>`;
 }
-
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-function renderStats(){
-  const total = patients.length;
-  const sent = patients.filter(p=>p.sent).length;
-  el('statsStrip').innerHTML = total ? `
-    <div class="stat"><b>${total}</b><span>Total</span></div>
-    <div class="stat"><b>${sent}</b><span>Terkirim</span></div>
-    <div class="stat"><b>${total-sent}</b><span>Menunggu</span></div>
-  ` : '';
-}
-
 function renderTable(){
   const q = el('searchInput').value.toLowerCase().trim();
   const status = el('filterStatus').value;
   let rows = patients.filter(p=>{
-    if(status==='pending' && p.sent) return false;
-    if(status==='sent' && !p.sent) return false;
-    if(q && !(p.nama.toLowerCase().includes(q) || (p.rm||'').toLowerCase().includes(q))) return false;
+    if(status==='pending' && isSent(p)) return false;
+    if(status==='sent' && !isSent(p)) return false;
+    if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
     return true;
   });
-  const tbody = el('tableBody');
-  el('emptyState').style.display = rows.length ? 'none' : 'block';
-  tbody.innerHTML = rows.map(p => `
-    <tr class="${p.sent?'sent':''}">
-      <td>
-        <div class="pname">${escapeHtml(p.nama)}</div>
-        <div class="psub">${p.rm ? 'RM '+escapeHtml(p.rm) : ''}</div>
-      </td>
-      <td>
-        <div class="pobat">${escapeHtml(p.obat)}</div>
-        <div class="psigna">${escapeHtml(p.signa)}</div>
-      </td>
-      <td class="pwa">${p.wa ? '+'+p.wa : '—'}</td>
-      <td>
-        <div>${escapeHtml(p.poli)}</div>
-        <div class="psub">${escapeHtml(p.tgl)}</div>
-      </td>
-      <td>
-        ${p.sent ? '<span class="stamp">TERKIRIM</span>' : '<span class="status-pill status-pending">Menunggu</span>'}
-      </td>
-      <td>
-        <div class="row-actions">
-          ${!p.sent ? `<button class="btn-mini wa" data-send="${p.id}" ${!p.wa?'disabled':''}>Kirim WA</button>` : `<button class="btn-mini undo" data-undo="${p.id}">Batalkan</button>`}
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  el('emptyState').style.display = rows.length? 'none':'block';
+  el('tableBody').innerHTML = rows.map(p=>`
+    <tr class="${isSent(p)?'sent':''}">
+      <td><div class="pname">${escapeHtml(p.name)}</div><div class="psub">${p.rm?'RM '+escapeHtml(p.rm):''}</div></td>
+      <td><div>${escapeHtml(p.obat)}</div><div class="psub">${escapeHtml(p.signa)}</div></td>
+      <td class="pwa">${p.wa?'+'+p.wa:'—'}</td>
+      <td><div>${escapeHtml(p.poli)}</div><div class="psub">${escapeHtml(p.tgl)}</div></td>
+      <td>${isSent(p)?'<span class="stamp">TERKIRIM</span>':'<span class="status-pill status-pending">Menunggu</span>'}</td>
+      <td>${!isSent(p)?`<button class="btn-mini wa" data-send="${p.row}" ${!p.wa?'disabled':''}>Kirim WA</button>`:`<button class="btn-mini undo" data-undo="${p.row}">Batalkan</button>`}</td>
+    </tr>`).join('');
+}
+function render(){ renderStats(); renderQueue(); renderTable(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
+
+async function sendAndMark(row){
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(!p) return;
+  window.open(waLink(p), '_blank');
+  const r = await apiPost('markSent', { row:p.row, name:p.name, obat:p.obat });
+  if(!r.ok){ alert('Gagal menandai terkirim: ' + r.error); return; }
+  p.dihubungi = new Date().toISOString().slice(0,10);
+  render();
+}
+async function undoSent(row){
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(!p) return;
+  const r = await apiPost('undoSent', { row:p.row });
+  if(!r.ok){ alert('Gagal membatalkan: ' + r.error); return; }
+  p.dihubungi = '';
+  render();
+}
+function skipQueue(row){
+  const i = patients.findIndex(x=>String(x.row)===String(row));
+  if(i===-1) return;
+  const [item] = patients.splice(i,1);
+  patients.push(item);
+  render();
 }
 
-function render(){
-  const hasData = patients.length > 0;
-  el('importPanel').style.display = hasData ? 'none' : 'block';
-  el('mainPanel').style.display = hasData ? 'block' : 'none';
-  renderStats();
-  if(hasData){ renderQueue(); renderTable(); }
-  el('footerNote').textContent = hasData ? 'Data tersimpan otomatis di perangkat ini. Gunakan "Ekspor CSV" untuk menyalin status ke Google Sheets (sheet "riwayat janji").' : '';
-}
-
-document.addEventListener('click', (e)=>{
-  const send = e.target.getAttribute('data-send');
-  const undo = e.target.getAttribute('data-undo');
-  const skip = e.target.getAttribute('data-skip');
+document.addEventListener('click', e=>{
+  const send=e.target.getAttribute('data-send'), undo=e.target.getAttribute('data-undo'), skip=e.target.getAttribute('data-skip');
   if(send) sendAndMark(send);
   if(undo) undoSent(undo);
   if(skip) skipQueue(skip);
 });
-
-el('btnLoadPaste').addEventListener('click', ()=> importData(el('importText').value));
-el('csvFile').addEventListener('change', (e)=>{
-  const f = e.target.files[0];
-  if(!f) return;
-  const reader = new FileReader();
-  reader.onload = () => importData(reader.result);
-  reader.readAsText(f);
-});
-el('btnImportAgain').addEventListener('click', ()=>{
-  el('importPanel').style.display = 'block';
-  el('mainPanel').style.display = patients.length ? 'block' : 'none';
-});
-el('btnReset').addEventListener('click', async ()=>{
-  if(!confirm('Hapus semua data pasien yang tersimpan di alat ini? Data di Google Sheets tidak terpengaruh.')) return;
-  patients = [];
-  await savePatients();
-  render();
-});
 el('searchInput').addEventListener('input', renderTable);
 el('filterStatus').addEventListener('change', renderTable);
 el('btnClearFilter').addEventListener('click', ()=>{ el('searchInput').value=''; el('filterStatus').value='all'; renderTable(); });
+el('btnTest').addEventListener('click', testConnection);
+el('btnRefresh').addEventListener('click', refreshAll);
+el('btnSettings').addEventListener('click', ()=>{ el('setupPanel').style.display='block'; el('cfgUrl').value=cfg.url; el('cfgToken').value=cfg.token; });
 
-el('btnSettings').addEventListener('click', ()=>{
-  el('tplPattern').value = settings.pattern;
-  el('tplClosing').value = settings.closing;
-  el('settingsModal').classList.add('show');
+// autocomplete obat
+const fObat = el('fObat'), acList = el('acList');
+fObat.addEventListener('input', ()=>{
+  const q = fObat.value.toLowerCase().trim();
+  if(!q){ acList.style.display='none'; return; }
+  const matches = obatList.filter(o=>o.toLowerCase().includes(q)).slice(0,30);
+  acList.innerHTML = matches.map(o=>`<div data-val="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join('');
+  acList.style.display = matches.length ? 'block':'none';
 });
-el('btnCloseSettings').addEventListener('click', ()=> el('settingsModal').classList.remove('show'));
-el('btnSaveSettings').addEventListener('click', async ()=>{
-  settings.pattern = el('tplPattern').value;
-  settings.closing = el('tplClosing').value;
-  await saveSettings();
-  el('settingsModal').classList.remove('show');
-  render();
+acList.addEventListener('click', e=>{
+  const v = e.target.getAttribute('data-val');
+  if(v){ fObat.value = v; acList.style.display='none'; }
 });
+document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')) acList.style.display='none'; });
 
-el('btnExport').addEventListener('click', ()=>{
-  if(patients.length===0) return;
-  const header = ['No.RM','Name','Nama Obat','Signa','Whatsapp Number','Asal Poli','Tgl Resep Diterima','Status','Tgl & Jam Dikirim'];
-  const lines = [header.join(',')];
-  for(const p of patients){
-    const row = [p.rm,p.nama,p.obat,p.signa,p.waRaw,p.poli,p.tgl, p.sent?'Terkirim':'Menunggu', p.sentAt||''];
-    lines.push(row.map(v => '"'+String(v||'').replace(/"/g,'""')+'"').join(','));
+el('btnAddPatient').addEventListener('click', async ()=>{
+  const msg = el('addMsg'); msg.className='status-msg';
+  const data = {
+    name: el('fName').value.trim(), rm: el('fRM').value.trim(), obat: fObat.value.trim(),
+    signa: el('fSigna').value.trim(), jmlResep: el('fJmlResep').value, jmlDiberikan: el('fJmlDiberikan').value,
+    wa: el('fWA').value.trim(), poli: el('fPoli').value.trim()
+  };
+  if(!data.name || !data.wa || !data.obat){ msg.textContent='Nama, obat, dan No. WA wajib diisi.'; msg.classList.add('status-err'); return; }
+  msg.textContent = 'Menyimpan...';
+  const r = await apiPost('addPatient', data);
+  if(r.ok){
+    msg.textContent = 'Tersimpan ke Google Sheets.'; msg.classList.add('status-ok');
+    ['fName','fRM','fSigna','fJmlResep','fJmlDiberikan','fWA','fPoli'].forEach(id=>el(id).value='');
+    fObat.value='';
+    await refreshAll();
+  } else {
+    msg.textContent = 'Gagal: ' + r.error; msg.classList.add('status-err');
   }
-  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'riwayat-notifikasi-obat.csv';
-  a.click();
 });
 
-loadState();
+loadCfg();
+if(cfg.url && cfg.token) bootMain(); else { el('cfgUrl').value=cfg.url||''; }
 </script>
 </body>
 </html>
