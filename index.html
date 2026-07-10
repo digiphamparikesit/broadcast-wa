@@ -28,6 +28,7 @@ button{font-family:'Inter';cursor:pointer;border:none;border-radius:8px;font-wei
 .btn-ghost:hover{background:#123E38;}
 .wrap{max-width:1150px;margin:0 auto;padding:24px;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .wrap-fixed{flex-shrink:0;}
+#mainPanel{flex:1;min-height:0;overflow:hidden;flex-direction:column;}
 .table-scroll{flex:1;min-height:0;overflow-y:auto;}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;}
 .setup-card{max-width:640px;margin:40px auto;overflow-y:auto;max-height:100%;}
@@ -91,6 +92,12 @@ td{padding:10px 14px;vertical-align:top;}
 .btn-mini.undo{background:transparent;border:1px solid var(--line);color:var(--muted);}
 .empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
 .hint{font-size:.72rem;color:var(--muted);margin-top:4px;}
+.tab-nav{display:flex;gap:8px;flex-shrink:0;margin-bottom:16px;}
+.tab-btn{background:#fff;border:1.5px solid var(--line);color:var(--muted);padding:10px 18px;border-radius:10px;font-size:.85rem;}
+.tab-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+.tab-panel{flex:1;min-height:0;display:none;flex-direction:column;overflow:hidden;}
+.tab-panel.active{display:flex;}
+.status-done{background:#E9F5E9;color:#1F6B2C;}
 footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--muted);font-size:.75rem;}
 </style>
 </head>
@@ -121,6 +128,12 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
   </div>
 
   <div id="mainPanel" style="display:none">
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tabBtnWA" data-tab="wa">Notifikasi WA</button>
+      <button class="tab-btn" id="tabBtnServah" data-tab="serah">Penyerahan Obat</button>
+    </div>
+
+    <div class="tab-panel active" id="tabWA">
     <div class="wrap-fixed">
       <div class="card" style="padding:14px 20px;margin-bottom:16px;">
         <label style="margin:0 0 5px">Petugas yang sedang mengirim notifikasi hari ini</label>
@@ -183,13 +196,49 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
         <div class="empty-state" id="emptyState" style="display:none">Tidak ada data yang cocok.</div>
       </div>
     </div>
+    </div>
+
+    <div class="tab-panel" id="tabServah">
+    <div class="wrap-fixed">
+      <div class="card" style="padding:14px 20px;margin-bottom:16px;">
+        <label style="margin:0 0 5px">Petugas yang sedang menyerahkan obat hari ini</label>
+        <div class="autocomplete">
+          <input type="text" id="fPetugasServahAktif" placeholder="Ketik nama untuk mencari...">
+          <div class="ac-list" id="acPetugasServahList"></div>
+        </div>
+        <div class="hint">Nama ini otomatis tercatat ke kolom "Petugas yang menyerahkan" (Q) di Google Sheets setiap kali kamu tandai "Sudah Diambil".</div>
+      </div>
+
+      <div class="queue-board" id="queueBoardServah"></div>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" id="searchInputServah" placeholder="Cari nama pasien atau No. RM...">
+        <select id="filterStatusServah">
+          <option value="all">Semua status</option>
+          <option value="pending">Menunggu diambil</option>
+          <option value="done">Sudah diambil</option>
+        </select>
+        <button class="btn-outline" id="btnClearFilterServah">Bersihkan filter</button>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pasien</th><th>Obat</th><th>Notifikasi WA</th><th>Poli / Tanggal</th><th>Status Pengambilan</th><th>Aksi</th></tr></thead>
+          <tbody id="tableBodyServah"></tbody>
+        </table>
+        <div class="empty-state" id="emptyStateServah" style="display:none">Tidak ada data yang cocok.</div>
+      </div>
+    </div>
+    </div>
   </div>
 </div>
 <footer class="note" id="footerNote"></footer>
 
 <script>
 const el = id => document.getElementById(id);
-let cfg = { url:'', token:'', petugasAktif:'', pattern:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}",
+let cfg = { url:'', token:'', petugasAktif:'', petugasServahAktif:'', pattern:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}",
   closing:"sudah tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
 let patients = [];
 let obatList = [];
@@ -246,7 +295,7 @@ async function testConnection(){
 
 async function bootMain(){
   el('setupPanel').style.display = 'none';
-  el('mainPanel').style.display = 'block';
+  el('mainPanel').style.display = 'flex';
   await refreshAll();
 }
 
@@ -256,6 +305,7 @@ async function refreshAll(){
   if(oRes.ok){ obatList = oRes.data; el('obatCount').textContent = '('+obatList.length+' obat)'; }
   if(gRes.ok){ petugasList = gRes.data; }
   el('fPetugasAktif').value = cfg.petugasAktif || '';
+  el('fPetugasServahAktif').value = cfg.petugasServahAktif || '';
   render();
 }
 
@@ -308,7 +358,53 @@ function renderTable(){
       <td>${!isSent(p)?`<button class="btn-mini wa" data-send="${p.row}" ${!p.wa?'disabled':''}>Kirim WA</button>`:`<button class="btn-mini undo" data-undo="${p.row}">Batalkan</button>`}</td>
     </tr>`).join('');
 }
-function render(){ renderStats(); renderQueue(); renderTable(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
+function render(){ renderStats(); renderQueue(); renderTable(); renderQueueServah(); renderTableServah(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
+
+function isDiambil(p){ return !!p.sudahDiambil; }
+function renderQueueServah(){
+  const board = el('queueBoardServah');
+  const eligible = patients.filter(isSent); // hanya yang sudah dikirim WA
+  const pending = eligible.filter(p=>!isDiambil(p));
+  const doneCount = eligible.length - pending.length;
+  if(eligible.length===0){
+    board.innerHTML = `<div class="queue-empty"><div class="display">Belum ada pasien yang dinotifikasi</div><p>Antrian penyerahan muncul otomatis setelah WA terkirim.</p></div>`;
+    return;
+  }
+  if(pending.length===0){
+    board.innerHTML = `<div class="queue-count"><b>${doneCount}/${eligible.length}</b><span>diambil</span></div><div class="queue-empty"><div class="display">\u2713 Semua obat sudah diserahkan</div><p>Tidak ada antrian penyerahan tersisa.</p></div>`;
+    return;
+  }
+  const p = pending[0];
+  board.innerHTML = `<div class="queue-count"><b>${doneCount}/${eligible.length}</b><span>diambil</span></div>
+    <div class="queue-eyebrow">Antrian penyerahan berikutnya</div>
+    <div class="queue-name">${escapeHtml(p.name)}</div>
+    <div class="queue-meta">${p.rm?'No. RM '+escapeHtml(p.rm):''} ${p.poli?'· '+escapeHtml(p.poli):''} · dihubungi ${escapeHtml(p.dihubungi||'-')}</div>
+    <div class="queue-obat"><b>${escapeHtml(p.obat)}</b>${p.signa?' — '+escapeHtml(p.signa):''}</div>
+    <div class="queue-actions">
+      <button class="btn-send" data-diambil="${p.row}">Tandai Sudah Diambil</button>
+      <button class="btn-skip" data-skipservah="${p.row}">Lewati dulu</button>
+    </div>`;
+}
+function renderTableServah(){
+  const q = el('searchInputServah').value.toLowerCase().trim();
+  const status = el('filterStatusServah').value;
+  let rows = patients.filter(isSent).filter(p=>{
+    if(status==='pending' && isDiambil(p)) return false;
+    if(status==='done' && !isDiambil(p)) return false;
+    if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  el('emptyStateServah').style.display = rows.length? 'none':'block';
+  el('tableBodyServah').innerHTML = rows.map(p=>`
+    <tr class="${isDiambil(p)?'sent':''}">
+      <td><div class="pname">${escapeHtml(p.name)}</div><div class="psub">${p.rm?'RM '+escapeHtml(p.rm):''}</div></td>
+      <td><div>${escapeHtml(p.obat)}</div><div class="psub">${escapeHtml(p.signa)}</div></td>
+      <td><span class="status-pill status-done">Terkirim</span><div class="psub">${escapeHtml(p.dihubungi||'')}</div></td>
+      <td><div>${escapeHtml(p.poli)}</div><div class="psub">${escapeHtml(p.tgl)}</div></td>
+      <td>${isDiambil(p)?'<span class="stamp">DIAMBIL</span><div class="psub">'+escapeHtml(p.petugasServah||'')+(p.tglDiambil?' · '+escapeHtml(p.tglDiambil):'')+'</div>':'<span class="status-pill status-pending">Menunggu diambil</span>'}</td>
+      <td>${!isDiambil(p)?`<button class="btn-mini wa" data-diambil="${p.row}">Sudah Diambil</button>`:`<button class="btn-mini undo" data-undodiambil="${p.row}">Batalkan</button>`}</td>
+    </tr>`).join('');
+}
 
 async function sendAndMark(row){
   const p = patients.find(x=>String(x.row)===String(row));
@@ -341,15 +437,61 @@ function skipQueue(row){
   render();
 }
 
+async function markDiambil(row){
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(!p) return;
+  if(!cfg.petugasServahAktif){
+    alert('Pilih dulu nama petugas yang menyerahkan (di bagian atas tab ini) sebelum menandai.');
+    el('fPetugasServahAktif').focus();
+    return;
+  }
+  const r = await apiPost('markDiambil', { row:p.row, name:p.name, obat:p.obat, petugas:cfg.petugasServahAktif });
+  if(!r.ok){ alert('Gagal menandai sudah diambil: ' + r.error); return; }
+  p.sudahDiambil = true;
+  p.petugasServah = cfg.petugasServahAktif;
+  p.tglDiambil = new Date().toISOString().slice(0,10);
+  render();
+}
+async function undoDiambilAction(row){
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(!p) return;
+  const r = await apiPost('undoDiambil', { row:p.row });
+  if(!r.ok){ alert('Gagal membatalkan: ' + r.error); return; }
+  p.sudahDiambil = false; p.petugasServah=''; p.tglDiambil='';
+  render();
+}
+function skipQueueServah(row){
+  const i = patients.findIndex(x=>String(x.row)===String(row));
+  if(i===-1) return;
+  const [item] = patients.splice(i,1);
+  patients.push(item);
+  render();
+}
+
 document.addEventListener('click', e=>{
   const send=e.target.getAttribute('data-send'), undo=e.target.getAttribute('data-undo'), skip=e.target.getAttribute('data-skip');
+  const diambil=e.target.getAttribute('data-diambil'), undoDiambil=e.target.getAttribute('data-undodiambil'), skipServah=e.target.getAttribute('data-skipservah');
   if(send) sendAndMark(send);
   if(undo) undoSent(undo);
   if(skip) skipQueue(skip);
+  if(diambil) markDiambil(diambil);
+  if(undoDiambil) undoDiambilAction(undoDiambil);
+  if(skipServah) skipQueueServah(skipServah);
 });
 el('searchInput').addEventListener('input', renderTable);
 el('filterStatus').addEventListener('change', renderTable);
 el('btnClearFilter').addEventListener('click', ()=>{ el('searchInput').value=''; el('filterStatus').value='all'; renderTable(); });
+el('searchInputServah').addEventListener('input', renderTableServah);
+el('filterStatusServah').addEventListener('change', renderTableServah);
+el('btnClearFilterServah').addEventListener('click', ()=>{ el('searchInputServah').value=''; el('filterStatusServah').value='all'; renderTableServah(); });
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    el(btn.dataset.tab==='wa' ? 'tabWA' : 'tabServah').classList.add('active');
+  });
+});
 el('btnTest').addEventListener('click', testConnection);
 el('btnRefresh').addEventListener('click', refreshAll);
 el('btnSettings').addEventListener('click', ()=>{ el('setupPanel').style.display='block'; el('cfgUrl').value=cfg.url; el('cfgToken').value=cfg.token; });
@@ -382,7 +524,22 @@ acPetugasList.addEventListener('click', e=>{
   const v = e.target.getAttribute('data-val');
   if(v){ fPetugasAktif.value = v; cfg.petugasAktif = v; saveCfg(); acPetugasList.style.display='none'; }
 });
-document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')){ acList.style.display='none'; acPetugasList.style.display='none'; } });
+
+// autocomplete petugas penyerahan
+const fPetugasServahAktif = el('fPetugasServahAktif'), acPetugasServahList = el('acPetugasServahList');
+fPetugasServahAktif.addEventListener('input', ()=>{
+  const q = fPetugasServahAktif.value.toLowerCase().trim();
+  cfg.petugasServahAktif = '';
+  if(!q){ acPetugasServahList.style.display='none'; return; }
+  const matches = petugasList.filter(o=>o.toLowerCase().includes(q)).slice(0,20);
+  acPetugasServahList.innerHTML = matches.map(o=>`<div data-val="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join('');
+  acPetugasServahList.style.display = matches.length ? 'block':'none';
+});
+acPetugasServahList.addEventListener('click', e=>{
+  const v = e.target.getAttribute('data-val');
+  if(v){ fPetugasServahAktif.value = v; cfg.petugasServahAktif = v; saveCfg(); acPetugasServahList.style.display='none'; }
+});
+document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')){ acList.style.display='none'; acPetugasList.style.display='none'; acPetugasServahList.style.display='none'; } });
 
 el('btnAddPatient').addEventListener('click', async ()=>{
   const msg = el('addMsg'); msg.className='status-msg';
