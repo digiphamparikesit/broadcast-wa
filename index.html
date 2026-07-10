@@ -12,10 +12,10 @@
   --line:#DCE5E2; --muted:#5C6B67;
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 h1,h2,h3,.display{font-family:'Space Grotesk',system-ui,sans-serif;}
 .mono{font-family:'IBM Plex Mono',monospace;}
-.topbar{background:var(--teal-dark);color:#EAF3F1;padding:18px 24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;border-bottom:4px solid var(--amber);}
+.topbar{background:var(--teal-dark);color:#EAF3F1;padding:18px 24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;border-bottom:4px solid var(--amber);flex-shrink:0;}
 .topbar h1{margin:0;font-size:1.15rem;font-weight:600;}
 .topbar .sub{font-size:.75rem;color:#9FC1BC;margin-top:2px;}
 .stats-strip{display:flex;gap:22px;}
@@ -26,9 +26,11 @@ h1,h2,h3,.display{font-family:'Space Grotesk',system-ui,sans-serif;}
 button{font-family:'Inter';cursor:pointer;border:none;border-radius:8px;font-weight:600;font-size:.82rem;}
 .btn-ghost{background:transparent;color:#EAF3F1;border:1px solid #2C5C57;padding:8px 12px;}
 .btn-ghost:hover{background:#123E38;}
-.wrap{max-width:1150px;margin:0 auto;padding:24px;}
+.wrap{max-width:1150px;margin:0 auto;padding:24px;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.wrap-fixed{flex-shrink:0;}
+.table-scroll{flex:1;min-height:0;overflow-y:auto;}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;}
-.setup-card{max-width:640px;margin:40px auto;}
+.setup-card{max-width:640px;margin:40px auto;overflow-y:auto;max-height:100%;}
 .setup-card h2{margin:0 0 6px;font-size:1.2rem;}
 .setup-card p{color:var(--muted);font-size:.85rem;line-height:1.55;}
 .setup-card ol{color:var(--muted);font-size:.83rem;line-height:1.7;padding-left:20px;}
@@ -119,53 +121,67 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
   </div>
 
   <div id="mainPanel" style="display:none">
-    <div class="queue-board" id="queueBoard"></div>
-
-    <details class="addform">
-      <summary>+ Tambah pasien obat janji baru</summary>
-      <div class="addform-body">
-        <div class="row2">
-          <div><label>Nama pasien</label><input type="text" id="fName"></div>
-          <div><label>No. RM</label><input type="text" id="fRM"></div>
+    <div class="wrap-fixed">
+      <div class="card" style="padding:14px 20px;margin-bottom:16px;">
+        <label style="margin:0 0 5px">Petugas yang sedang mengirim notifikasi hari ini</label>
+        <div class="autocomplete">
+          <input type="text" id="fPetugasAktif" placeholder="Ketik nama untuk mencari...">
+          <div class="ac-list" id="acPetugasList"></div>
         </div>
-        <div class="row2">
-          <div class="autocomplete">
-            <label>Nama obat <span class="hint" id="obatCount"></span></label>
-            <input type="text" id="fObat" placeholder="Ketik untuk mencari dari daftar obat...">
-            <div class="ac-list" id="acList"></div>
-          </div>
-          <div><label>Signa / aturan pakai</label><input type="text" id="fSigna" placeholder="mis. 1X1"></div>
-        </div>
-        <div class="row2">
-          <div><label>Jml resep</label><input type="number" id="fJmlResep"></div>
-          <div><label>Jml diberikan (boleh kosong)</label><input type="number" id="fJmlDiberikan"></div>
-        </div>
-        <div class="row2">
-          <div><label>No. WhatsApp</label><input type="text" id="fWA" placeholder="08xxxxxxxxxx"></div>
-          <div><label>Asal poli</label><input type="text" id="fPoli"></div>
-        </div>
-        <div style="margin-top:16px;">
-          <button class="btn-primary" id="btnAddPatient">Simpan ke Google Sheets</button>
-        </div>
-        <div class="status-msg" id="addMsg"></div>
+        <div class="hint">Nama ini akan otomatis tercatat di Google Sheets (kolom Petugas Pengirim WA) setiap kali kamu klik "Kirim WhatsApp" — untuk riwayat jika ada komplain pasien.</div>
       </div>
-    </details>
 
-    <div class="toolbar">
-      <input type="text" class="search-input" id="searchInput" placeholder="Cari nama pasien atau No. RM...">
-      <select id="filterStatus">
-        <option value="all">Semua status</option>
-        <option value="pending">Menunggu dikirim</option>
-        <option value="sent">Sudah dikirim</option>
-      </select>
-      <button class="btn-outline" id="btnClearFilter">Bersihkan filter</button>
+      <div class="queue-board" id="queueBoard"></div>
+
+      <details class="addform">
+        <summary>+ Tambah pasien obat janji baru</summary>
+        <div class="addform-body">
+          <div class="row2">
+            <div><label>Nama pasien</label><input type="text" id="fName"></div>
+            <div><label>No. RM</label><input type="text" id="fRM"></div>
+          </div>
+          <div class="row2">
+            <div class="autocomplete">
+              <label>Nama obat <span class="hint" id="obatCount"></span></label>
+              <input type="text" id="fObat" placeholder="Ketik untuk mencari dari daftar obat...">
+              <div class="ac-list" id="acList"></div>
+            </div>
+            <div><label>Signa / aturan pakai</label><input type="text" id="fSigna" placeholder="mis. 1X1"></div>
+          </div>
+          <div class="row2">
+            <div><label>Jml resep</label><input type="number" id="fJmlResep"></div>
+            <div><label>Jml diberikan (boleh kosong)</label><input type="number" id="fJmlDiberikan"></div>
+          </div>
+          <div class="row2">
+            <div><label>No. WhatsApp</label><input type="text" id="fWA" placeholder="08xxxxxxxxxx"></div>
+            <div><label>Asal poli</label><input type="text" id="fPoli"></div>
+          </div>
+          <div style="margin-top:16px;">
+            <button class="btn-primary" id="btnAddPatient">Simpan ke Google Sheets</button>
+          </div>
+          <div class="status-msg" id="addMsg"></div>
+        </div>
+      </details>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Cari nama pasien atau No. RM...">
+        <select id="filterStatus">
+          <option value="all">Semua status</option>
+          <option value="pending">Menunggu dikirim</option>
+          <option value="sent">Sudah dikirim</option>
+        </select>
+        <button class="btn-outline" id="btnClearFilter">Bersihkan filter</button>
+      </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Pasien</th><th>Obat</th><th>No. WA</th><th>Poli / Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-      <div class="empty-state" id="emptyState" style="display:none">Tidak ada data yang cocok.</div>
+
+    <div class="table-scroll">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pasien</th><th>Obat</th><th>No. WA</th><th>Poli / Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none">Tidak ada data yang cocok.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -173,10 +189,11 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
 
 <script>
 const el = id => document.getElementById(id);
-let cfg = { url:'', token:'', pattern:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}",
+let cfg = { url:'', token:'', petugasAktif:'', pattern:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}",
   closing:"sudah tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
 let patients = [];
 let obatList = [];
+let petugasList = [];
 
 function loadCfg(){
   try{
@@ -234,9 +251,11 @@ async function bootMain(){
 }
 
 async function refreshAll(){
-  const [pRes, oRes] = await Promise.all([apiGet('getPatients'), apiGet('getObatList')]);
+  const [pRes, oRes, gRes] = await Promise.all([apiGet('getPatients'), apiGet('getObatList'), apiGet('getPetugasList')]);
   if(pRes.ok) patients = pRes.data; else alert('Gagal memuat data pasien: ' + pRes.error);
   if(oRes.ok){ obatList = oRes.data; el('obatCount').textContent = '('+obatList.length+' obat)'; }
+  if(gRes.ok){ petugasList = gRes.data; }
+  el('fPetugasAktif').value = cfg.petugasAktif || '';
   render();
 }
 
@@ -285,7 +304,7 @@ function renderTable(){
       <td><div>${escapeHtml(p.obat)}</div><div class="psub">${escapeHtml(p.signa)}</div></td>
       <td class="pwa">${p.wa?'+'+p.wa:'—'}</td>
       <td><div>${escapeHtml(p.poli)}</div><div class="psub">${escapeHtml(p.tgl)}</div></td>
-      <td>${isSent(p)?'<span class="stamp">TERKIRIM</span>':'<span class="status-pill status-pending">Menunggu</span>'}</td>
+      <td>${isSent(p)?'<span class="stamp">TERKIRIM</span><div class="psub">'+escapeHtml(p.petugasWA||'')+(p.dihubungi?' · '+escapeHtml(p.dihubungi):'')+'</div>':'<span class="status-pill status-pending">Menunggu</span>'}</td>
       <td>${!isSent(p)?`<button class="btn-mini wa" data-send="${p.row}" ${!p.wa?'disabled':''}>Kirim WA</button>`:`<button class="btn-mini undo" data-undo="${p.row}">Batalkan</button>`}</td>
     </tr>`).join('');
 }
@@ -294,10 +313,16 @@ function render(){ renderStats(); renderQueue(); renderTable(); el('footerNote')
 async function sendAndMark(row){
   const p = patients.find(x=>String(x.row)===String(row));
   if(!p) return;
+  if(!cfg.petugasAktif){
+    alert('Pilih dulu nama petugas yang sedang mengirim (di bagian atas halaman) sebelum kirim WA.');
+    el('fPetugasAktif').focus();
+    return;
+  }
   window.open(waLink(p), '_blank');
-  const r = await apiPost('markSent', { row:p.row, name:p.name, obat:p.obat });
+  const r = await apiPost('markSent', { row:p.row, name:p.name, obat:p.obat, petugas:cfg.petugasAktif });
   if(!r.ok){ alert('Gagal menandai terkirim: ' + r.error); return; }
   p.dihubungi = new Date().toISOString().slice(0,10);
+  p.petugasWA = cfg.petugasAktif;
   render();
 }
 async function undoSent(row){
@@ -342,7 +367,22 @@ acList.addEventListener('click', e=>{
   const v = e.target.getAttribute('data-val');
   if(v){ fObat.value = v; acList.style.display='none'; }
 });
-document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')) acList.style.display='none'; });
+
+// autocomplete petugas aktif
+const fPetugasAktif = el('fPetugasAktif'), acPetugasList = el('acPetugasList');
+fPetugasAktif.addEventListener('input', ()=>{
+  const q = fPetugasAktif.value.toLowerCase().trim();
+  cfg.petugasAktif = ''; // reset sampai user benar-benar memilih dari daftar
+  if(!q){ acPetugasList.style.display='none'; return; }
+  const matches = petugasList.filter(o=>o.toLowerCase().includes(q)).slice(0,20);
+  acPetugasList.innerHTML = matches.map(o=>`<div data-val="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join('');
+  acPetugasList.style.display = matches.length ? 'block':'none';
+});
+acPetugasList.addEventListener('click', e=>{
+  const v = e.target.getAttribute('data-val');
+  if(v){ fPetugasAktif.value = v; cfg.petugasAktif = v; saveCfg(); acPetugasList.style.display='none'; }
+});
+document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')){ acList.style.display='none'; acPetugasList.style.display='none'; } });
 
 el('btnAddPatient').addEventListener('click', async ()=>{
   const msg = el('addMsg'); msg.className='status-msg';
