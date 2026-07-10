@@ -165,7 +165,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
             <div><label>Jml diberikan (boleh kosong)</label><input type="number" id="fJmlDiberikan"></div>
           </div>
           <div class="row2">
-            <div><label>No. WhatsApp</label><input type="text" id="fWA" placeholder="628xxxxxxxxxx"></div>
+            <div><label>No. WhatsApp</label><input type="text" id="fWA" placeholder="628xxxxxxxxx"></div>
             <div><label>Asal poli</label><input type="text" id="fPoli"></div>
           </div>
           <div style="margin-top:16px;">
@@ -176,7 +176,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       </details>
 
       <div class="toolbar">
-        <input type="text" class="search-input" id="searchInput" placeholder="Cari nama pasien atau No. RM...">
+        <input type="text" class="search-input" id="searchInput" placeholder="Cari nama obat...">
         <select id="filterStatus">
           <option value="all">Semua status</option>
           <option value="pending">Menunggu dikirim</option>
@@ -344,7 +344,7 @@ function renderTable(){
   let rows = patients.filter(p=>{
     if(status==='pending' && isSent(p)) return false;
     if(status==='sent' && !isSent(p)) return false;
-    if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
+    if(q && !(p.obat||'').toLowerCase().includes(q)) return false;
     return true;
   });
   el('emptyState').style.display = rows.length? 'none':'block';
