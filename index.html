@@ -145,7 +145,10 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
     <label>URL Web App Apps Script</label>
     <input type="text" id="cfgUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
     <label>Token</label>
-    <input type="password" id="cfgToken" placeholder="token dari fungsi setupToken()">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="password" id="cfgToken" placeholder="token dari fungsi setupToken()" style="flex:1;">
+      <button type="button" class="btn-outline" id="btnToggleToken" style="white-space:nowrap;">👁 Tampilkan</button>
+    </div>
     <div style="margin-top:16px;display:flex;gap:10px;">
       <button class="btn-primary" id="btnTest">Uji Koneksi &amp; Simpan</button>
     </div>
@@ -721,6 +724,12 @@ document.querySelectorAll('.tab-btn-header').forEach(btn=>{
 el('btnTest').addEventListener('click', testConnection);
 el('btnRefresh').addEventListener('click', refreshAll);
 el('btnSettings').addEventListener('click', ()=>{ el('setupPanel').style.display='block'; el('cfgUrl').value=cfg.url; el('cfgToken').value=cfg.token; });
+el('btnToggleToken').addEventListener('click', ()=>{
+  const inp = el('cfgToken');
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  el('btnToggleToken').textContent = showing ? '👁 Tampilkan' : '🙈 Sembunyikan';
+});
 
 // autocomplete obat
 const fObat = el('fObat'), acList = el('acList');
