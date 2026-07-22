@@ -555,10 +555,11 @@ function renderTableServah(){
       <td><div>${escapeHtml(p.obat)}</div><div class="psub">${escapeHtml(p.signa)}</div></td>
       <td class="psub">${p.jmlResep!==''&&p.jmlResep!=null?p.jmlResep:'—'}</td>
       <td>
+        ${isDiambil(p) ? `<div class="psub">${p.jmlDiberikan!==''&&p.jmlDiberikan!=null?p.jmlDiberikan:'—'} <span title="Terkunci setelah obat diambil">🔒</span></div>` : `
         <div class="inline-edit">
           <input type="number" class="jmldiberikan-input" data-row="${p.row}" value="${p.jmlDiberikan!==''&&p.jmlDiberikan!=null?p.jmlDiberikan:''}" style="width:64px;">
           <button class="btn-mini undo" data-savejmldiberikan="${p.row}">Simpan</button>
-        </div>
+        </div>`}
       </td>
       <td class="psub">${p.sisa!==''&&p.sisa!=null?p.sisa:'—'}</td>
       <td class="pwa">${p.wa?'+'+p.wa:'—'}</td>
