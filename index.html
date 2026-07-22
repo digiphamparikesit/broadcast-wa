@@ -255,7 +255,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       <div class="wa-right">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Pasien</th><th>Obat</th><th>Resep</th><th>Diberi</th><th>Sisa</th><th>No. WA</th><th>Notifikasi WA</th><th>Poli / Tanggal</th><th>Status Pengambilan</th><th>Catatan</th><th>Aksi</th></tr></thead>
+            <thead><tr><th id="thPasienServah" style="cursor:pointer;user-select:none;">Pasien</th><th>Obat</th><th>Resep</th><th>Diberi</th><th>Sisa</th><th>No. WA</th><th>Notifikasi WA</th><th>Poli / Tanggal</th><th>Status Pengambilan</th><th>Catatan</th><th>Aksi</th></tr></thead>
             <tbody id="tableBodyServah"></tbody>
           </table>
           <div class="empty-state" id="emptyStateServah" style="display:none">Tidak ada data yang cocok.</div>
@@ -340,6 +340,7 @@ const PAGE_SIZE = 10;
 let waPage = 1;
 let waSortDir = 'desc'; // default: pasien baru diinput otomatis muncul paling atas
 let servahPage = 1;
+let servahSortDir = null; // null = urutan asli, 'asc' = A-Z, 'desc' = Z-A
 let riwayatData = null; // null = belum dimuat (lazy-load saat tab dibuka)
 let riwayatPage = 1;
 let obatList = [];
@@ -544,6 +545,14 @@ function renderTableServah(){
     if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
     return true;
   });
+  if(servahSortDir){
+    rows = rows.slice().sort((a,b)=>{
+      const na = (a.name||'').toLowerCase(), nb = (b.name||'').toLowerCase();
+      if(na === nb) return 0;
+      return servahSortDir==='asc' ? (na>nb?1:-1) : (na<nb?1:-1);
+    });
+  }
+  el('thPasienServah').textContent = 'Pasien' + (servahSortDir==='asc' ? ' ▲' : servahSortDir==='desc' ? ' ▼' : '');
   el('emptyStateServah').style.display = rows.length? 'none':'block';
   const totalPagesServah = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   if(servahPage > totalPagesServah) servahPage = totalPagesServah;
@@ -718,6 +727,10 @@ el('searchInputNama').addEventListener('input', ()=>{ waPage=1; renderTable(); }
 el('filterStatus').addEventListener('change', ()=>{ waPage=1; renderTable(); });
 el('btnClearFilter').addEventListener('click', ()=>{ el('searchInput').value=''; el('searchInputNama').value=''; el('filterStatus').value='all'; waPage=1; renderTable(); });
 el('thTglMasuk').addEventListener('click', ()=>{ waSortDir = waSortDir==='desc' ? 'asc' : 'desc'; waPage=1; renderTable(); });
+el('thPasienServah').addEventListener('click', ()=>{
+  servahSortDir = servahSortDir===null ? 'asc' : servahSortDir==='asc' ? 'desc' : null;
+  servahPage=1; renderTableServah();
+});
 el('searchInputServah').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
 el('filterStatusServah').addEventListener('change', ()=>{ servahPage=1; renderTableServah(); });
 el('btnClearFilterServah').addEventListener('click', ()=>{ el('searchInputServah').value=''; el('filterStatusServah').value='all'; servahPage=1; renderTableServah(); });
