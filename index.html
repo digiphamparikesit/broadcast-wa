@@ -78,6 +78,8 @@ details.addform summary{padding:10px 18px;cursor:pointer;font-weight:600;font-si
 .table-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:.83rem;}
 thead th{text-align:left;padding:10px 14px;background:#EEF3F1;color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;position:sticky;top:0;z-index:5;}
+thead th.sortable-th{cursor:pointer;user-select:none;}
+thead th.sortable-th:hover{color:var(--teal);}
 tbody tr{border-top:1px solid var(--line);}
 tbody tr.sent{background:#FAFAF8;}
 td{padding:10px 14px;vertical-align:top;}
@@ -216,7 +218,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       <div class="wa-right">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Pasien</th><th>Obat</th><th>Resep</th><th>Diberi</th><th>Sisa</th><th>No. WA</th><th id="thTglMasuk" style="cursor:pointer;user-select:none;">Tgl Masuk</th><th>Catatan</th><th>Status</th><th>Aksi</th></tr></thead>
+            <thead><tr><th id="thWaPasien" class="sortable-th">Pasien</th><th id="thWaObat" class="sortable-th">Obat</th><th id="thWaResep" class="sortable-th">Resep</th><th id="thWaDiberi" class="sortable-th">Diberi</th><th id="thWaSisa" class="sortable-th">Sisa</th><th id="thWaNoWA" class="sortable-th">No. WA</th><th id="thTglMasuk" class="sortable-th">Tgl Masuk</th><th id="thWaCatatan" class="sortable-th">Catatan</th><th id="thWaStatus" class="sortable-th">Status</th><th>Aksi</th></tr></thead>
             <tbody id="tableBody"></tbody>
           </table>
           <div class="empty-state" id="emptyState" style="display:none">Tidak ada data yang cocok.</div>
@@ -255,7 +257,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       <div class="wa-right">
         <div class="table-wrap">
           <table>
-            <thead><tr><th id="thPasienServah" style="cursor:pointer;user-select:none;">Pasien</th><th>Obat</th><th>Resep</th><th>Diberi</th><th>Sisa</th><th>No. WA</th><th>Notifikasi WA</th><th>Poli / Tanggal</th><th>Status Pengambilan</th><th>Catatan</th><th>Aksi</th></tr></thead>
+            <thead><tr><th id="thServahPasien" class="sortable-th">Pasien</th><th id="thServahObat" class="sortable-th">Obat</th><th id="thServahResep" class="sortable-th">Resep</th><th id="thServahDiberi" class="sortable-th">Diberi</th><th id="thServahSisa" class="sortable-th">Sisa</th><th id="thServahNoWA" class="sortable-th">No. WA</th><th id="thServahNotif" class="sortable-th">Notifikasi WA</th><th id="thServahPoli" class="sortable-th">Poli / Tanggal</th><th id="thServahStatus" class="sortable-th">Status Pengambilan</th><th id="thServahCatatan" class="sortable-th">Catatan</th><th>Aksi</th></tr></thead>
             <tbody id="tableBodyServah"></tbody>
           </table>
           <div class="empty-state" id="emptyStateServah" style="display:none">Tidak ada data yang cocok.</div>
@@ -288,7 +290,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       <div class="wa-right" style="flex:1;">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Tgl Resep</th><th>Pasien</th><th>Obat</th><th>No. WA</th><th>Poli</th><th>Dihubungi</th><th>Diambil</th><th>Petugas Serah</th><th>Keterangan</th></tr></thead>
+            <thead><tr><th id="thRiwTgl" class="sortable-th">Tgl Resep</th><th id="thRiwPasien" class="sortable-th">Pasien</th><th id="thRiwObat" class="sortable-th">Obat</th><th id="thRiwWA" class="sortable-th">No. WA</th><th id="thRiwPoli" class="sortable-th">Poli</th><th id="thRiwDihubungi" class="sortable-th">Dihubungi</th><th id="thRiwDiambil" class="sortable-th">Diambil</th><th id="thRiwPetugas" class="sortable-th">Petugas Serah</th><th id="thRiwKet" class="sortable-th">Keterangan</th></tr></thead>
             <tbody id="tableBodyRiwayat"></tbody>
           </table>
           <div class="empty-state" id="emptyStateRiwayat" style="display:none">Tidak ada riwayat yang cocok.</div>
@@ -338,13 +340,89 @@ let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c
 let patients = [];
 const PAGE_SIZE = 10;
 let waPage = 1;
-let waSortDir = 'desc'; // default: pasien baru diinput otomatis muncul paling atas
 let servahPage = 1;
-let servahSortDir = null; // null = urutan asli, 'asc' = A-Z, 'desc' = Z-A
 let riwayatData = null; // null = belum dimuat (lazy-load saat tab dibuka)
 let riwayatPage = 1;
 let obatList = [];
 let petugasList = [];
+
+// --- sistem sort generik, berlaku untuk semua kolom di ketiga tabel ---
+let waSort = { field:'tgl', dir:'desc' };        // default: pasien baru diinput otomatis muncul paling atas
+let servahSort = { field:null, dir:null };
+let riwayatSort = { field:null, dir:null };
+
+const waColumns = [
+  { th:'thWaPasien', label:'Pasien', field:'name', type:'string' },
+  { th:'thWaObat', label:'Obat', field:'obat', type:'string' },
+  { th:'thWaResep', label:'Resep', field:'jmlResep', type:'number' },
+  { th:'thWaDiberi', label:'Diberi', field:'jmlDiberikan', type:'number' },
+  { th:'thWaSisa', label:'Sisa', field:'sisa', type:'number' },
+  { th:'thWaNoWA', label:'No. WA', field:'wa', type:'string' },
+  { th:'thTglMasuk', label:'Tgl Masuk', field:'tgl', type:'string' },
+  { th:'thWaCatatan', label:'Catatan', field:'catatanPasien', type:'string' },
+  { th:'thWaStatus', label:'Status', type:'number', accessor:p=>isSent(p)?1:0 }
+];
+const servahColumns = [
+  { th:'thServahPasien', label:'Pasien', field:'name', type:'string' },
+  { th:'thServahObat', label:'Obat', field:'obat', type:'string' },
+  { th:'thServahResep', label:'Resep', field:'jmlResep', type:'number' },
+  { th:'thServahDiberi', label:'Diberi', field:'jmlDiberikan', type:'number' },
+  { th:'thServahSisa', label:'Sisa', field:'sisa', type:'number' },
+  { th:'thServahNoWA', label:'No. WA', field:'wa', type:'string' },
+  { th:'thServahNotif', label:'Notifikasi WA', field:'dihubungi', type:'string' },
+  { th:'thServahPoli', label:'Poli / Tanggal', field:'poli', type:'string' },
+  { th:'thServahStatus', label:'Status Pengambilan', type:'number', accessor:p=>isDiambil(p)?1:0 },
+  { th:'thServahCatatan', label:'Catatan', field:'catatanServah', type:'string' }
+];
+const riwayatColumns = [
+  { th:'thRiwTgl', label:'Tgl Resep', field:'tgl', type:'string' },
+  { th:'thRiwPasien', label:'Pasien', field:'name', type:'string' },
+  { th:'thRiwObat', label:'Obat', field:'obat', type:'string' },
+  { th:'thRiwWA', label:'No. WA', field:'wa', type:'string' },
+  { th:'thRiwPoli', label:'Poli', field:'poli', type:'string' },
+  { th:'thRiwDihubungi', label:'Dihubungi', field:'dihubungi', type:'string' },
+  { th:'thRiwDiambil', label:'Diambil', field:'tglDiambil', type:'string' },
+  { th:'thRiwPetugas', label:'Petugas Serah', field:'petugasServah', type:'string' },
+  { th:'thRiwKet', label:'Keterangan', field:'keterangan', type:'string' }
+];
+
+function applySort(rows, sortState, columns){
+  if(!sortState.field) return rows;
+  const col = columns.find(c => c.field === sortState.field);
+  if(!col) return rows;
+  const getVal = p => col.accessor ? col.accessor(p) : p[col.field];
+  return rows.slice().sort((a,b)=>{
+    let va = getVal(a), vb = getVal(b);
+    if(col.type === 'number'){ va = Number(va)||0; vb = Number(vb)||0; }
+    else { va = String(va||'').toLowerCase(); vb = String(vb||'').toLowerCase(); }
+    if(va === vb){
+      // dasi: kalau kolomnya tanggal masuk, pasien yang baru diinput tetap ditaruh duluan
+      if(col.field === 'tgl') return sortState.dir === 'desc' ? (b.row - a.row) : (a.row - b.row);
+      return 0;
+    }
+    return sortState.dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+}
+function updateSortHeaders(columns, sortState){
+  columns.forEach(col=>{
+    const thEl = document.getElementById(col.th);
+    if(!thEl) return;
+    thEl.textContent = col.label + (sortState.field === col.field ? (sortState.dir==='asc' ? ' ▲' : ' ▼') : '');
+  });
+}
+function wireSortHeaders(columns, sortState, rerenderFn, resetPageFn){
+  columns.forEach(col=>{
+    const thEl = document.getElementById(col.th);
+    if(!thEl) return;
+    thEl.addEventListener('click', ()=>{
+      if(sortState.field !== col.field){ sortState.field = col.field; sortState.dir = 'asc'; }
+      else if(sortState.dir === 'asc'){ sortState.dir = 'desc'; }
+      else { sortState.field = null; sortState.dir = null; }
+      if(resetPageFn) resetPageFn();
+      rerenderFn();
+    });
+  });
+}
 
 function loadCfg(){
   try{
@@ -460,13 +538,8 @@ function renderTable(){
     if(qNama && !(p.name||'').toLowerCase().includes(qNama)) return false;
     return true;
   });
-  rows = rows.slice().sort((a,b)=>{
-    const ta = a.tgl||'', tb = b.tgl||'';
-    if(ta !== tb) return waSortDir==='desc' ? (ta<tb?1:-1) : (ta>tb?1:-1);
-    // tanggal sama -> baris yang lebih baru ditambahkan (row lebih besar) tetap di atas kalau desc
-    return waSortDir==='desc' ? (b.row - a.row) : (a.row - b.row);
-  });
-  el('thTglMasuk').textContent = 'Tgl Masuk ' + (waSortDir==='desc' ? '▼' : '▲');
+  rows = applySort(rows, waSort, waColumns);
+  updateSortHeaders(waColumns, waSort);
   el('emptyState').style.display = rows.length? 'none':'block';
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   if(waPage > totalPages) waPage = totalPages;
@@ -545,14 +618,8 @@ function renderTableServah(){
     if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
     return true;
   });
-  if(servahSortDir){
-    rows = rows.slice().sort((a,b)=>{
-      const na = (a.name||'').toLowerCase(), nb = (b.name||'').toLowerCase();
-      if(na === nb) return 0;
-      return servahSortDir==='asc' ? (na>nb?1:-1) : (na<nb?1:-1);
-    });
-  }
-  el('thPasienServah').textContent = 'Pasien' + (servahSortDir==='asc' ? ' ▲' : servahSortDir==='desc' ? ' ▼' : '');
+  rows = applySort(rows, servahSort, servahColumns);
+  updateSortHeaders(servahColumns, servahSort);
   el('emptyStateServah').style.display = rows.length? 'none':'block';
   const totalPagesServah = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   if(servahPage > totalPagesServah) servahPage = totalPagesServah;
@@ -603,6 +670,8 @@ function renderRiwayat(){
     if(sampai && (!p.tgl || p.tgl > sampai)) return false;
     return true;
   });
+  rows = applySort(rows, riwayatSort, riwayatColumns);
+  updateSortHeaders(riwayatColumns, riwayatSort);
   el('emptyStateRiwayat').style.display = rows.length? 'none':'block';
   const totalPagesRiwayat = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   if(riwayatPage > totalPagesRiwayat) riwayatPage = totalPagesRiwayat;
@@ -726,11 +795,9 @@ el('searchInput').addEventListener('input', ()=>{ waPage=1; renderTable(); });
 el('searchInputNama').addEventListener('input', ()=>{ waPage=1; renderTable(); });
 el('filterStatus').addEventListener('change', ()=>{ waPage=1; renderTable(); });
 el('btnClearFilter').addEventListener('click', ()=>{ el('searchInput').value=''; el('searchInputNama').value=''; el('filterStatus').value='all'; waPage=1; renderTable(); });
-el('thTglMasuk').addEventListener('click', ()=>{ waSortDir = waSortDir==='desc' ? 'asc' : 'desc'; waPage=1; renderTable(); });
-el('thPasienServah').addEventListener('click', ()=>{
-  servahSortDir = servahSortDir===null ? 'asc' : servahSortDir==='asc' ? 'desc' : null;
-  servahPage=1; renderTableServah();
-});
+wireSortHeaders(waColumns, waSort, renderTable, ()=>{ waPage=1; });
+wireSortHeaders(servahColumns, servahSort, renderTableServah, ()=>{ servahPage=1; });
+wireSortHeaders(riwayatColumns, riwayatSort, renderRiwayat, ()=>{ riwayatPage=1; });
 el('searchInputServah').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
 el('filterStatusServah').addEventListener('change', ()=>{ servahPage=1; renderTableServah(); });
 el('btnClearFilterServah').addEventListener('click', ()=>{ el('searchInputServah').value=''; el('filterStatusServah').value='all'; servahPage=1; renderTableServah(); });
