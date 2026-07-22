@@ -425,8 +425,8 @@ function waLink(p){ return 'https://api.whatsapp.com/send?phone='+encodeURICompo
 function isSent(p){ return !!p.dihubungi; }
 
 function renderStats(){
-  const total = patients.length, sent = patients.filter(isSent).length;
-  el('statsStrip').innerHTML = total ? `<div class="stat"><b>${total}</b><span>Total</span></div><div class="stat"><b>${sent}</b><span>Terkirim</span></div><div class="stat"><b>${total-sent}</b><span>Menunggu</span></div>` : '';
+  const total = patients.length, sent = patients.filter(isSent).length, diambil = patients.filter(isDiambil).length;
+  el('statsStrip').innerHTML = total ? `<div class="stat"><b>${total}</b><span>Total</span></div><div class="stat"><b>${sent}</b><span>Terkirim</span></div><div class="stat"><b>${total-sent}</b><span>Menunggu</span></div><div class="stat"><b>${diambil}</b><span>Diambil</span></div>` : '';
 }
 function renderQueue(){
   const board = el('queueBoard');
