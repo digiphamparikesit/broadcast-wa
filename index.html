@@ -132,6 +132,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
     <button class="tab-btn-header" id="tabBtnServah" data-tab="serah">Penyerahan Obat</button>
     <button class="tab-btn-header" id="tabBtnRiwayat" data-tab="riwayat">Riwayat Janji</button>
     <button class="tab-btn-header" id="tabBtnRekap" data-tab="rekap">Rekapan Obat</button>
+    <button class="tab-btn-header" id="tabBtnRekapB" data-tab="rekapB">Rekapan Obat B</button>
   </div>
   <div class="stats-strip" id="statsStrip"></div>
   <div class="actions">
@@ -317,6 +318,24 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
         <div class="pagination" id="paginationRekap"></div>
       </div>
     </div>
+
+    <div class="tab-panel" id="tabRekapB">
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;flex-shrink:0;">
+        <label style="margin:0 0 8px">Rekapan obat untuk pasien yang belum dikirimi notifikasi WA (Menunggu)</label>
+        <input type="text" id="searchRekapObatB" class="search-input" placeholder="Cari nama obat..." style="width:100%;">
+      </div>
+
+      <div class="wa-right" style="flex:1;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th id="thRekapObatB" class="sortable-th">Nama Obat</th><th id="thRekapJumlahB" class="sortable-th">Jumlah Pasien Menunggu</th><th id="thRekapSisaB" class="sortable-th">Total Perlu Disiapkan Gudang</th></tr></thead>
+            <tbody id="tableBodyRekapB"></tbody>
+          </table>
+          <div class="empty-state" id="emptyStateRekapB" style="display:none">Tidak ada obat yang cocok.</div>
+        </div>
+        <div class="pagination" id="paginationRekapB"></div>
+      </div>
+    </div>
   </div>
 </div>
 <footer class="note" id="footerNote"></footer>
@@ -411,6 +430,13 @@ const rekapColumns = [
 ];
 let rekapSort = { field:'jumlahPasien', dir:'desc' }; // default: obat paling banyak ditunggu di atas
 let rekapPage = 1;
+const rekapBColumns = [
+  { th:'thRekapObatB', label:'Nama Obat', field:'obat', type:'string' },
+  { th:'thRekapJumlahB', label:'Jumlah Pasien Menunggu', field:'jumlahPasien', type:'number' },
+  { th:'thRekapSisaB', label:'Total Perlu Disiapkan Gudang', field:'totalSisa', type:'number' }
+];
+let rekapBSort = { field:'jumlahPasien', dir:'desc' };
+let rekapBPage = 1;
 
 function applySort(rows, sortState, columns){
   if(!sortState.field) return rows;
@@ -607,7 +633,7 @@ function renderTable(){
     <span>Halaman ${waPage} dari ${totalPages} (${rows.length} pasien)</span>
     <button ${waPage>=totalPages?'disabled':''} data-pagenext="wa">Berikutnya ›</button>`;
 }
-function render(){ renderStats(); renderQueue(); renderTable(); renderQueueServah(); renderTableServah(); renderRekap(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
+function render(){ renderStats(); renderQueue(); renderTable(); renderQueueServah(); renderTableServah(); renderRekap(); renderRekapB(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
 
 function isDiambil(p){ return !!p.sudahDiambil; }
 function renderQueueServah(){
@@ -758,6 +784,43 @@ function renderRekap(){
     <button ${rekapPage>=totalPagesRekap?'disabled':''} data-pagenext="rekap">Berikutnya ›</button>`;
 }
 
+function computeRekapObatB(){
+  const map = {};
+  patients.forEach(p=>{
+    if(isSent(p)) return; // hanya yang BELUM dikirim notifikasi WA (grup "Menunggu")
+    const key = (p.obat||'').trim();
+    if(!key) return;
+    if(!map[key]) map[key] = { obat:key, jumlahPasien:0, totalSisa:0 };
+    map[key].jumlahPasien += 1;
+    const resep = Number(p.jmlResep)||0;
+    const diberi = (p.jmlDiberikan!==''&&p.jmlDiberikan!=null) ? Number(p.jmlDiberikan) : 0;
+    const sisaVal = (p.sisa!==''&&p.sisa!=null) ? Number(p.sisa) : (resep - diberi);
+    map[key].totalSisa += isNaN(sisaVal) ? 0 : sisaVal;
+  });
+  return Object.values(map);
+}
+function renderRekapB(){
+  const q = el('searchRekapObatB').value.toLowerCase().trim();
+  let rows = computeRekapObatB().filter(r => !q || r.obat.toLowerCase().includes(q));
+  rows = applySort(rows, rekapBSort, rekapBColumns);
+  updateSortHeaders(rekapBColumns, rekapBSort);
+  el('emptyStateRekapB').style.display = rows.length? 'none':'block';
+  const totalPagesRekapB = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  if(rekapBPage > totalPagesRekapB) rekapBPage = totalPagesRekapB;
+  if(rekapBPage < 1) rekapBPage = 1;
+  const pageRows = rows.slice((rekapBPage-1)*PAGE_SIZE, rekapBPage*PAGE_SIZE);
+  el('tableBodyRekapB').innerHTML = pageRows.map(r=>`
+    <tr>
+      <td>${escapeHtml(r.obat)}</td>
+      <td>${r.jumlahPasien}</td>
+      <td>${r.totalSisa}</td>
+    </tr>`).join('');
+  el('paginationRekapB').innerHTML = `
+    <button ${rekapBPage<=1?'disabled':''} data-pageprev="rekapB">‹ Sebelumnya</button>
+    <span>Halaman ${rekapBPage} dari ${totalPagesRekapB} (${rows.length} jenis obat)</span>
+    <button ${rekapBPage>=totalPagesRekapB?'disabled':''} data-pagenext="rekapB">Berikutnya ›</button>`;
+}
+
 async function sendAndMark(row){
   const p = patients.find(x=>String(x.row)===String(row));
   if(!p) return;
@@ -862,6 +925,7 @@ wireSortHeaders(waColumns, waSort, renderTable, ()=>{ waPage=1; });
 wireSortHeaders(servahColumns, servahSort, renderTableServah, ()=>{ servahPage=1; });
 wireSortHeaders(riwayatColumns, riwayatSort, renderRiwayat, ()=>{ riwayatPage=1; });
 wireSortHeaders(rekapColumns, rekapSort, renderRekap, ()=>{ rekapPage=1; });
+wireSortHeaders(rekapBColumns, rekapBSort, renderRekapB, ()=>{ rekapBPage=1; });
 el('searchInputServah').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
 el('filterStatusServah').addEventListener('change', ()=>{ servahPage=1; renderTableServah(); });
 el('btnClearFilterServah').addEventListener('click', ()=>{ el('searchInputServah').value=''; el('filterStatusServah').value='all'; servahPage=1; renderTableServah(); });
@@ -875,8 +939,11 @@ document.addEventListener('click', e=>{
   if(next==='riwayat'){ riwayatPage++; renderRiwayat(); }
   if(prev==='rekap'){ rekapPage--; renderRekap(); }
   if(next==='rekap'){ rekapPage++; renderRekap(); }
+  if(prev==='rekapB'){ rekapBPage--; renderRekapB(); }
+  if(next==='rekapB'){ rekapBPage++; renderRekapB(); }
 });
 el('searchRekapObat').addEventListener('input', ()=>{ rekapPage=1; renderRekap(); });
+el('searchRekapObatB').addEventListener('input', ()=>{ rekapBPage=1; renderRekapB(); });
 el('searchRiwayatNama').addEventListener('input', ()=>{ riwayatPage=1; renderRiwayat(); });
 el('searchRiwayatDari').addEventListener('change', ()=>{ riwayatPage=1; renderRiwayat(); });
 el('searchRiwayatSampai').addEventListener('change', ()=>{ riwayatPage=1; renderRiwayat(); });
@@ -889,9 +956,10 @@ document.querySelectorAll('.tab-btn-header').forEach(btn=>{
     document.querySelectorAll('.tab-btn-header').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
-    const tabIdMap = { wa:'tabWA', serah:'tabServah', riwayat:'tabRiwayat', rekap:'tabRekap' };
+    const tabIdMap = { wa:'tabWA', serah:'tabServah', riwayat:'tabRiwayat', rekap:'tabRekap', rekapB:'tabRekapB' };
     el(tabIdMap[btn.dataset.tab]).classList.add('active');
     if(btn.dataset.tab === 'riwayat' && riwayatData === null) loadRiwayat();
+    if(btn.dataset.tab === 'rekapB') renderRekapB();
     if(btn.dataset.tab === 'rekap') renderRekap();
   });
 });
