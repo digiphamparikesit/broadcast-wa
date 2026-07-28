@@ -703,7 +703,12 @@ function renderTableServah(){
       <td><span class="status-pill status-done">Terkirim</span><div class="psub">${escapeHtml(p.dihubungi||'')}</div></td>
       <td><div>${escapeHtml(p.poli)}</div><div class="psub">${escapeHtml(p.tgl)}</div></td>
       <td>${isDiambil(p)?'<span class="stamp">DIAMBIL</span><div class="psub">'+escapeHtml(p.petugasServah||'')+(p.tglDiambil?' · '+escapeHtml(p.tglDiambil):'')+'</div>':'<span class="status-pill status-pending">Menunggu diambil</span>'+(isOverdue(p)?'<div class="psub" style="color:var(--stamp);font-weight:600;">⚠ &gt;1 bulan sejak WA dikirim</div>':'')}</td>
-      <td>${isDiambil(p)?`<div class="psub" style="max-width:160px;white-space:normal;">${escapeHtml(p.catatanServah||'—')}</div>`:`<input type="text" class="catatan-input" placeholder="Catatan (opsional)" style="width:150px;padding:6px 8px;border-radius:6px;border:1px solid var(--line);font-size:.76rem;">`}</td>
+      <td>
+        <div class="inline-edit">
+          <input type="text" class="catatan-servah-input" data-row="${p.row}" value="${escapeHtml(p.catatanServah||'')}" placeholder="Catatan (opsional)" style="width:150px;padding:6px 8px;border-radius:6px;border:1px solid var(--line);font-size:.76rem;">
+          <button class="btn-mini undo" data-savecatatanservah="${p.row}">Simpan</button>
+        </div>
+      </td>
       <td>${!isDiambil(p)?`<button class="btn-mini wa" data-diambil="${p.row}">Sudah Diambil</button>`:`<button class="btn-mini undo" data-undodiambil="${p.row}">Batalkan</button>`}</td>
     </tr>`).join('');
   el('paginationServah').innerHTML = `
@@ -920,8 +925,14 @@ document.addEventListener('click', e=>{
   if(skip) skipQueue(skip);
   if(diambil){
     const container = e.target.closest('tr') || e.target.closest('.queue-board');
-    const catatanInput = container ? container.querySelector('.catatan-input') : null;
+    const catatanInput = container ? container.querySelector('.catatan-input, .catatan-servah-input') : null;
     markDiambil(diambil, catatanInput ? catatanInput.value.trim() : '');
+  }
+  const saveCatatanServahRow = e.target.getAttribute('data-savecatatanservah');
+  if(saveCatatanServahRow){
+    const row = e.target.closest('tr');
+    const input = row ? row.querySelector('.catatan-servah-input') : document.querySelector(`.catatan-servah-input[data-row="${saveCatatanServahRow}"]`);
+    if(input) saveCatatanServahInline(saveCatatanServahRow, input.value.trim());
   }
   if(undoDiambil) undoDiambilAction(undoDiambil);
   if(skipServah) skipQueueServah(skipServah);
@@ -1070,6 +1081,13 @@ async function saveJmlDiberikanInline(row, jmlDiberikan){
     p.jmlDiberikan = jmlDiberikan===''?'':Number(jmlDiberikan);
     p.sisa = (p.jmlResep!==''&&p.jmlResep!=null && p.jmlDiberikan!=='') ? (Number(p.jmlResep)-Number(p.jmlDiberikan)) : p.sisa;
   }
+  render();
+}
+async function saveCatatanServahInline(row, catatan){
+  const r = await apiPost('editCatatanServah', { row, catatan });
+  if(!r.ok){ alert('Gagal menyimpan catatan: ' + r.error); return; }
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(p){ p.catatanServah = catatan; }
   render();
 }
 
