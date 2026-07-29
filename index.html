@@ -249,6 +249,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
         <div class="card" style="padding:14px;">
           <label style="margin:0 0 8px">Filter</label>
           <input type="text" class="search-input" id="searchInputServah" placeholder="Cari nama pasien atau No. RM..." style="margin-bottom:8px;width:100%;">
+          <input type="text" class="search-input" id="searchInputServahObat" placeholder="Cari nama obat..." style="margin-bottom:8px;width:100%;">
           <select id="filterStatusServah" style="width:100%;margin-bottom:8px;">
             <option value="all">Semua status</option>
             <option value="pending">Menunggu diambil</option>
@@ -672,11 +673,13 @@ function renderQueueServah(){
 }
 function renderTableServah(){
   const q = el('searchInputServah').value.toLowerCase().trim();
+  const qObat = el('searchInputServahObat').value.toLowerCase().trim();
   const status = el('filterStatusServah').value;
   let rows = patients.filter(isSent).filter(p=>{
     if(status==='pending' && isDiambil(p)) return false;
     if(status==='done' && !isDiambil(p)) return false;
     if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
+    if(qObat && !(p.obat||'').toLowerCase().includes(qObat)) return false;
     return true;
   });
   rows = applySort(rows, servahSort, servahColumns);
@@ -947,8 +950,9 @@ wireSortHeaders(riwayatColumns, riwayatSort, renderRiwayat, ()=>{ riwayatPage=1;
 wireSortHeaders(rekapColumns, rekapSort, renderRekap, ()=>{ rekapPage=1; });
 wireSortHeaders(rekapBColumns, rekapBSort, renderRekapB, ()=>{ rekapBPage=1; });
 el('searchInputServah').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
+el('searchInputServahObat').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
 el('filterStatusServah').addEventListener('change', ()=>{ servahPage=1; renderTableServah(); });
-el('btnClearFilterServah').addEventListener('click', ()=>{ el('searchInputServah').value=''; el('filterStatusServah').value='all'; servahPage=1; renderTableServah(); });
+el('btnClearFilterServah').addEventListener('click', ()=>{ el('searchInputServah').value=''; el('searchInputServahObat').value=''; el('filterStatusServah').value='all'; servahPage=1; renderTableServah(); });
 document.addEventListener('click', e=>{
   const prev = e.target.getAttribute('data-pageprev'), next = e.target.getAttribute('data-pagenext');
   if(prev==='wa'){ waPage--; renderTable(); }
