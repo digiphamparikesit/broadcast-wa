@@ -139,6 +139,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
   <div class="stats-strip" id="statsStrip"></div>
   <div class="actions">
     <button class="btn-ghost" id="btnSettings">Pengaturan</button>
+    <button class="btn-ghost" id="btnPatterns">Pola Pesan</button>
     <button class="btn-ghost" id="btnRefresh">Segarkan Data</button>
   </div>
 </div>
@@ -374,9 +375,33 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
   </div>
 </div>
 
+<div class="modal-bg" id="patternsModal">
+  <div class="modal" style="max-width:680px;">
+    <h3>Pola Pesan Broadcast (Rotasi Otomatis)</h3>
+    <p style="color:var(--muted);font-size:.82rem;line-height:1.5;">
+      Sistem otomatis memilih 1 pola berbeda setiap hari (berdasarkan hari dalam minggu) dari pola yang <b>aktif</b> di bawah — supaya tidak ada 1 pola yang dipakai terus-menerus.
+      Placeholder yang bisa dipakai: <span class="mono">{nama}</span>, <span class="mono">{obat}</span>, <span class="mono">{signa}</span>, <span class="mono">{closing}</span> (otomatis diisi teks dari sel U1 Google Sheets).
+      Kalau ada pola yang "kena" (bikin nomor kena suspend), <b>matikan</b> saja pola itu di sini — jangan dihapus, biar tercatat.
+    </p>
+    <div id="patternsList"></div>
+    <div class="status-msg" id="patternsMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="btnClosePatterns">Tutup</button>
+      <button class="btn-primary" id="btnSavePatterns">Simpan Pola</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const el = id => document.getElementById(id);
-let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c-tLo4ULhj_2mOuNFFPg8L24n4KEUjcXjmRJNMo9-Xkwr/exec', token:'a7331696-8f6f-4f43-86e4-41075917d811', petugasAktif:'', petugasServahAktif:'', pattern:"Izin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}",
+let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c-tLo4ULhj_2mOuNFFPg8L24n4KEUjcXjmRJNMo9-Xkwr/exec', token:'a7331696-8f6f-4f43-86e4-41075917d811', petugasAktif:'', petugasServahAktif:'',
+  patterns: [
+    { aktif:true, teks:"Assalamualaikum Bpk/Ibu/Sdr {nama}.\nKami informasikan bahwa obat {obat} {closing}\nMohon balas *SIAP* jika pesan ini sudah diterima. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Selamat pagi/siang/sore Bpk/Ibu {nama} \ud83d\ude4f\nBerikut info dari Farmasi RSUD AM Parikesit: obat {obat} {closing}\nBalas *OK* ya kalau info ini sudah sampai. Terima kasih" },
+    { aktif:true, teks:"Assalamu'alaikum.\nYth. Bpk/Ibu/Sdr {nama},\nObat {obat} {closing}\nBalas *DITERIMA* untuk konfirmasi. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Halo {nama} \ud83d\ude4f\nObat {obat} {closing}\nKalau sudah baca pesan ini, boleh balas singkat \"sip\" ya. Terima kasih banyak" },
+    { aktif:true, teks:"Farmasi RSUD AM Parikesit menginformasikan:\nObat {obat} a.n. {nama} {closing}\nMohon dibalas sebagai tanda konfirmasi diterima. Terima kasih \ud83d\ude4f" }
+  ],
   closing:"sudah tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
 let patients = [];
 const PAGE_SIZE = 10;
@@ -554,7 +579,16 @@ async function refreshAll(){
 }
 
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function buildMessage(p){ return cfg.pattern.replaceAll('{nama}',p.name).replaceAll('{obat}',p.obat).replaceAll('{signa}',p.signa||'').replaceAll('{closing}',cfg.closing); }
+function getPatternForToday(){
+  const active = cfg.patterns.filter(p=>p.aktif);
+  if(active.length===0) return { aktif:true, teks:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}" };
+  const dayIdx = new Date().getDay(); // 0=Minggu..6=Sabtu
+  return active[dayIdx % active.length];
+}
+function buildMessage(p){
+  const pola = getPatternForToday();
+  return pola.teks.replaceAll('{nama}',p.name).replaceAll('{obat}',p.obat).replaceAll('{signa}',p.signa||'').replaceAll('{closing}',cfg.closing);
+}
 function waLink(p){ return 'https://api.whatsapp.com/send?phone='+encodeURIComponent(p.wa)+'&text='+encodeURIComponent(buildMessage(p)); }
 function isSent(p){ return !!p.dihubungi; }
 
@@ -990,6 +1024,36 @@ document.querySelectorAll('.tab-btn-header').forEach(btn=>{
 el('btnTest').addEventListener('click', testConnection);
 el('btnRefresh').addEventListener('click', refreshAll);
 el('btnSettings').addEventListener('click', ()=>{ el('setupPanel').style.display='block'; el('cfgUrl').value=cfg.url; el('cfgToken').value=cfg.token; });
+
+function renderPatternsModal(){
+  const todayIdx = new Date().getDay();
+  const hariNama = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][todayIdx];
+  const activeToday = getPatternForToday();
+  el('patternsList').innerHTML = cfg.patterns.map((p,i)=>`
+    <div class="card" style="padding:12px 14px;margin-bottom:10px;${p===activeToday?'border-color:var(--amber);':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <label style="margin:0;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" data-pat-aktif="${i}" ${p.aktif?'checked':''}> Pola ${i+1} ${p.aktif?'':'<span style="color:var(--stamp);">(nonaktif)</span>'}
+        </label>
+        ${p===activeToday?'<span class="status-pill status-pending">Dipakai hari ini ('+hariNama+')</span>':''}
+      </div>
+      <textarea data-pat-teks="${i}" rows="4" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:.78rem;border:1.5px solid var(--line);border-radius:8px;padding:8px;">${escapeHtml(p.teks)}</textarea>
+    </div>`).join('');
+}
+el('btnPatterns').addEventListener('click', ()=>{ renderPatternsModal(); el('patternsModal').classList.add('show'); });
+el('btnClosePatterns').addEventListener('click', ()=> el('patternsModal').classList.remove('show'));
+el('btnSavePatterns').addEventListener('click', ()=>{
+  cfg.patterns.forEach((p,i)=>{
+    const chk = document.querySelector(`[data-pat-aktif="${i}"]`);
+    const txt = document.querySelector(`[data-pat-teks="${i}"]`);
+    if(chk) p.aktif = chk.checked;
+    if(txt) p.teks = txt.value;
+  });
+  saveCfg();
+  el('patternsMsg').textContent = 'Tersimpan.'; el('patternsMsg').className='status-msg status-ok';
+  renderPatternsModal();
+  setTimeout(()=>{ el('patternsMsg').textContent=''; }, 2000);
+});
 el('btnToggleToken').addEventListener('click', ()=>{
   const inp = el('cfgToken');
   const showing = inp.type === 'text';
