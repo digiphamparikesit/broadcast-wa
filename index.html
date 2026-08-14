@@ -379,7 +379,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
   <div class="modal" style="max-width:680px;">
     <h3>Pola Pesan Broadcast (Rotasi Otomatis)</h3>
     <p style="color:var(--muted);font-size:.82rem;line-height:1.5;">
-      Sistem otomatis memilih 1 pola berbeda setiap hari (berdasarkan hari dalam minggu) dari pola yang <b>aktif</b> di bawah — supaya tidak ada 1 pola yang dipakai terus-menerus.
+      Sistem otomatis memakai pola secara <b>berurutan setiap kali kirim WA</b> (Pola 1 → Pola 2 → ... → Pola terakhir → balik lagi ke Pola 1, terus berputar) dari pola yang <b>aktif</b> di bawah — supaya tidak ada 1 pola yang dipakai berulang-ulang berturutan.
       Placeholder yang bisa dipakai: <span class="mono">{nama}</span>, <span class="mono">{obat}</span>, <span class="mono">{signa}</span>, <span class="mono">{closing}</span> (otomatis diisi teks dari sel U1 Google Sheets).
       Kalau ada pola yang "kena" (bikin nomor kena suspend), <b>matikan</b> saja pola itu di sini — jangan dihapus, biar tercatat.
     </p>
@@ -394,15 +394,25 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
 
 <script>
 const el = id => document.getElementById(id);
-let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c-tLo4ULhj_2mOuNFFPg8L24n4KEUjcXjmRJNMo9-Xkwr/exec', token:'a7331696-8f6f-4f43-86e4-41075917d811', petugasAktif:'', petugasServahAktif:'',
+let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c-tLo4ULhj_2mOuNFFPg8L24n4KEUjcXjmRJNMo9-Xkwr/exec', token:'978cf3bc-6cd1-4f0d-9382-949f2d99aaa9', petugasAktif:'', petugasServahAktif:'',
   patterns: [
     { aktif:true, teks:"Assalamualaikum Bpk/Ibu/Sdr {nama}.\nKami informasikan bahwa obat {obat} {closing}\nMohon balas *SIAP* jika pesan ini sudah diterima. Terima kasih \ud83d\ude4f" },
     { aktif:true, teks:"Selamat pagi/siang/sore Bpk/Ibu {nama} \ud83d\ude4f\nBerikut info dari Farmasi RSUD AM Parikesit: obat {obat} {closing}\nBalas *OK* ya kalau info ini sudah sampai. Terima kasih" },
     { aktif:true, teks:"Assalamu'alaikum.\nYth. Bpk/Ibu/Sdr {nama},\nObat {obat} {closing}\nBalas *DITERIMA* untuk konfirmasi. Terima kasih \ud83d\ude4f" },
     { aktif:true, teks:"Halo {nama} \ud83d\ude4f\nObat {obat} {closing}\nKalau sudah baca pesan ini, boleh balas singkat \"sip\" ya. Terima kasih banyak" },
-    { aktif:true, teks:"Farmasi RSUD AM Parikesit menginformasikan:\nObat {obat} a.n. {nama} {closing}\nMohon dibalas sebagai tanda konfirmasi diterima. Terima kasih \ud83d\ude4f" }
+    { aktif:true, teks:"Farmasi RSUD AM Parikesit menginformasikan:\nObat {obat} a.n. {nama} {closing}\nMohon dibalas sebagai tanda konfirmasi diterima. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Assalamualaikum warahmatullahi wabarakatuh.\nBpk/Ibu {nama}, obat {obat} {closing}\nBoleh dibalas *TERIMA* ya untuk konfirmasi. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Pemberitahuan Farmasi RSUD AM Parikesit untuk {nama}:\nObat {obat} {closing}\nTerima kasih atas perhatiannya, mohon balas jika sudah membaca \ud83d\ude4f" },
+    { aktif:true, teks:"Bpk/Ibu/Sdr {nama} yth,\nKami sampaikan bahwa obat {obat} {closing}\nSilakan balas pesan ini sebagai konfirmasi ya. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Assalamualaikum {nama} \ud83d\ude4f\nMau info kalau obat {obat} {closing}\nDitunggu balasannya ya Bpk/Ibu. Terima kasih" },
+    { aktif:true, teks:"Info dari kami, Farmasi RSUD AM Parikesit:\n{nama}, obat {obat} {closing}\nBalas ya kalau pesan ini sudah dibaca, terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Selamat pagi/siang/sore.\nBerikut kami sampaikan info untuk Bpk/Ibu/Sdr {nama}: obat {obat} {closing}\nMohon konfirmasi balasannya ya, terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Yth. {nama},\nMenindaklanjuti resep sebelumnya, obat {obat} {closing}\nMohon dikonfirmasi dengan membalas pesan ini. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Assalamualaikum.\n{nama}, obat {obat} {closing}\nKami tunggu balasan singkat dari Bpk/Ibu ya. Terima kasih banyak \ud83d\ude4f" },
+    { aktif:true, teks:"Bpk/Ibu {nama}, ini info dari Farmasi RSUD AM Parikesit ya:\nObat {obat} {closing}\nBoleh dibalas kalau sudah terima info ini. Terima kasih \ud83d\ude4f" },
+    { aktif:true, teks:"Assalamualaikum Bpk/Ibu/Sdr {nama},\nSekadar mengingatkan bahwa obat {obat} {closing}\nMohon balas ya sebagai tanda sudah menerima. Terima kasih \ud83d\ude4f" }
   ],
-  closing:"tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
+  closing:"tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
 let patients = [];
 const PAGE_SIZE = 10;
 let waPage = 1;
@@ -579,14 +589,31 @@ async function refreshAll(){
 }
 
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function getPatternForToday(){
-  const active = cfg.patterns.filter(p=>p.aktif);
+function getTodayKey(){ return new Date().toISOString().slice(0,10); }
+function getDailySendState(){
+  try{
+    const raw = localStorage.getItem('farmasi-daily-send');
+    if(raw){ const s = JSON.parse(raw); if(s.date === getTodayKey()) return s; }
+  }catch(e){}
+  return { date: getTodayKey(), count: 0 };
+}
+function saveDailySendState(s){ try{ localStorage.setItem('farmasi-daily-send', JSON.stringify(s)); }catch(e){} }
+function getActivePatterns(){ return cfg.patterns.filter(p=>p.aktif); }
+function dailyLimit(){ return getActivePatterns().length; } // jumlah pola aktif = panjang 1 putaran rotasi
+function sisaKirimHariIni(){ return Math.max(0, dailyLimit() - getDailySendState().count); }
+function getPatternForNextSend(){
+  const active = getActivePatterns();
   if(active.length===0) return { aktif:true, teks:"Assalamualaikum. Selamat Pagi/Sore/Malam\nIzin menyampaikan Bpk/Ibu/Sdr {nama} Obat {obat} {closing}" };
-  const dayIdx = new Date().getDay(); // 0=Minggu..6=Sabtu
-  return active[dayIdx % active.length];
+  const state = getDailySendState();
+  return active[state.count % active.length];
+}
+function registerSendUsed(){
+  const s = getDailySendState();
+  s.count += 1;
+  saveDailySendState(s);
 }
 function buildMessage(p){
-  const pola = getPatternForToday();
+  const pola = getPatternForNextSend();
   return pola.teks.replaceAll('{nama}',p.name).replaceAll('{obat}',p.obat).replaceAll('{signa}',p.signa||'').replaceAll('{closing}',cfg.closing);
 }
 function waLink(p){ return 'https://api.whatsapp.com/send?phone='+encodeURIComponent(p.wa)+'&text='+encodeURIComponent(buildMessage(p)); }
@@ -600,8 +627,10 @@ function renderQueue(){
   const board = el('queueBoard');
   const pending = patients.filter(p=>!isSent(p));
   const sentCount = patients.length - pending.length;
+  const state = getDailySendState();
+  const infoBadge = `<div class="hint" style="margin-top:6px;">Terkirim hari ini: <b>${state.count}</b> pesan (pola berputar 1-${dailyLimit()||1} terus-menerus)</div>`;
   if(pending.length===0){
-    board.innerHTML = `<div class="queue-count"><b>${sentCount}/${patients.length||0}</b><span>terkirim</span></div><div class="queue-empty"><div class="display">\u2713 Semua pasien sudah dinotifikasi</div><p>Tidak ada antrian tersisa.</p></div>`;
+    board.innerHTML = `<div class="queue-count"><b>${sentCount}/${patients.length||0}</b><span>terkirim</span></div><div class="queue-empty"><div class="display">\u2713 Semua pasien sudah dinotifikasi</div><p>Tidak ada antrian tersisa.</p></div>${infoBadge}`;
     return;
   }
   const p = pending[0];
@@ -614,7 +643,8 @@ function renderQueue(){
     <div class="queue-actions">
       <button class="btn-send" data-send="${p.row}" ${!p.wa?'disabled':''}>Kirim WhatsApp</button>
       <button class="btn-skip" data-skip="${p.row}">Lewati dulu</button>
-    </div>`;
+    </div>
+    ${infoBadge}`;
 }
 function renderTable(){
   const qObat = el('searchInput').value.toLowerCase().trim();
@@ -881,6 +911,7 @@ async function sendAndMark(row){
     return;
   }
   window.open(waLink(p), '_blank');
+  registerSendUsed();
   const r = await apiPost('markSent', { row:p.row, name:p.name, obat:p.obat, petugas:cfg.petugasAktif });
   if(!r.ok){ alert('Gagal menandai terkirim: ' + r.error); return; }
   p.dihubungi = new Date().toISOString().slice(0,10);
@@ -1026,16 +1057,16 @@ el('btnRefresh').addEventListener('click', refreshAll);
 el('btnSettings').addEventListener('click', ()=>{ el('setupPanel').style.display='block'; el('cfgUrl').value=cfg.url; el('cfgToken').value=cfg.token; });
 
 function renderPatternsModal(){
-  const todayIdx = new Date().getDay();
-  const hariNama = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][todayIdx];
-  const activeToday = getPatternForToday();
-  el('patternsList').innerHTML = cfg.patterns.map((p,i)=>`
-    <div class="card" style="padding:12px 14px;margin-bottom:10px;${p===activeToday?'border-color:var(--amber);':''}">
+  const nextPattern = getPatternForNextSend();
+  const state = getDailySendState();
+  el('patternsList').innerHTML = `<div class="hint" style="margin-bottom:10px;">Sudah terkirim hari ini: <b>${state.count}</b> pesan (rotasi terus berputar, tidak ada batas)</div>` +
+  cfg.patterns.map((p,i)=>`
+    <div class="card" style="padding:12px 14px;margin-bottom:10px;${p===nextPattern?'border-color:var(--amber);':''}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <label style="margin:0;display:flex;align-items:center;gap:6px;">
           <input type="checkbox" data-pat-aktif="${i}" ${p.aktif?'checked':''}> Pola ${i+1} ${p.aktif?'':'<span style="color:var(--stamp);">(nonaktif)</span>'}
         </label>
-        ${p===activeToday?'<span class="status-pill status-pending">Dipakai hari ini ('+hariNama+')</span>':''}
+        ${p===nextPattern?'<span class="status-pill status-pending">Dipakai untuk kirim berikutnya</span>':''}
       </div>
       <textarea data-pat-teks="${i}" rows="4" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:.78rem;border:1.5px solid var(--line);border-radius:8px;padding:8px;">${escapeHtml(p.teks)}</textarea>
     </div>`).join('');
