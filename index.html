@@ -135,6 +135,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
     <button class="tab-btn-header" id="tabBtnRiwayat" data-tab="riwayat">Riwayat Janji</button>
     <button class="tab-btn-header" id="tabBtnRekap" data-tab="rekap">Rekapan Obat</button>
     <button class="tab-btn-header" id="tabBtnRekapB" data-tab="rekapB">Rekapan Obat B</button>
+    <button class="tab-btn-header" id="tabBtnGrup" data-tab="grup">Penyerahan via Grup WA</button>
   </div>
   <div class="stats-strip" id="statsStrip"></div>
   <div class="actions">
@@ -314,7 +315,7 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       <div class="wa-right" style="flex:1;">
         <div class="table-wrap">
           <table>
-            <thead><tr><th id="thRekapObat" class="sortable-th">Nama Obat</th><th id="thRekapJumlah" class="sortable-th">Jumlah Pasien Menunggu</th><th id="thRekapSisa" class="sortable-th">Total Sisa Perlu Disiapkan</th></tr></thead>
+            <thead><tr><th id="thRekapObat" class="sortable-th">Nama Obat</th><th id="thRekapJumlah" class="sortable-th">Jumlah Pasien Menunggu</th><th id="thRekapSisa" class="sortable-th">Total Sisa Perlu Disiapkan</th><th id="thRekapTgl" class="sortable-th">Tgl Terlama</th></tr></thead>
             <tbody id="tableBodyRekap"></tbody>
           </table>
           <div class="empty-state" id="emptyStateRekap" style="display:none">Tidak ada obat yang cocok.</div>
@@ -332,13 +333,53 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
       <div class="wa-right" style="flex:1;">
         <div class="table-wrap">
           <table>
-            <thead><tr><th id="thRekapObatB" class="sortable-th">Nama Obat</th><th id="thRekapJumlahB" class="sortable-th">Jumlah Pasien Menunggu</th><th id="thRekapSisaB" class="sortable-th">Total Perlu Disiapkan Gudang</th></tr></thead>
+            <thead><tr><th id="thRekapObatB" class="sortable-th">Nama Obat</th><th id="thRekapJumlahB" class="sortable-th">Jumlah Pasien Menunggu</th><th id="thRekapSisaB" class="sortable-th">Total Perlu Disiapkan Gudang</th><th id="thRekapTglB" class="sortable-th">Tgl Terlama</th></tr></thead>
             <tbody id="tableBodyRekapB"></tbody>
           </table>
           <div class="empty-state" id="emptyStateRekapB" style="display:none">Tidak ada obat yang cocok.</div>
         </div>
         <div class="pagination" id="paginationRekapB"></div>
       </div>
+    </div>
+
+    <div class="tab-panel" id="tabGrup">
+    <div class="wa-split">
+      <div class="wa-left">
+        <div class="card" style="padding:10px 16px;margin-bottom:10px;">
+          <label style="margin:0 0 5px">Petugas yang sedang menyerahkan obat (via Grup WA) hari ini</label>
+          <div class="autocomplete">
+            <input type="text" id="fPetugasGrupAktif" placeholder="Ketik nama untuk mencari...">
+            <div class="ac-list" id="acPetugasGrupList"></div>
+          </div>
+          <div class="hint">Informasi obat siap diambil sudah disebar lewat Grup WA (di luar aplikasi ini). Tab ini khusus untuk menandai pengambilan — tidak perlu kirim WA individual dulu.</div>
+        </div>
+
+        <div class="queue-board" id="queueBoardGrup"></div>
+
+        <div class="card" style="padding:14px;">
+          <label style="margin:0 0 8px">Filter</label>
+          <input type="text" class="search-input" id="searchInputGrup" placeholder="Cari nama pasien atau No. RM..." style="margin-bottom:8px;width:100%;">
+          <input type="text" class="search-input" id="searchInputGrupObat" placeholder="Cari nama obat..." style="margin-bottom:8px;width:100%;">
+          <select id="filterStatusGrup" style="width:100%;margin-bottom:8px;">
+            <option value="all">Semua status</option>
+            <option value="pending">Menunggu diambil</option>
+            <option value="done">Sudah diambil</option>
+          </select>
+          <button class="btn-outline" id="btnClearFilterGrup" style="width:100%;">Bersihkan filter</button>
+        </div>
+      </div>
+
+      <div class="wa-right">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th id="thGrupPasien" class="sortable-th">Pasien</th><th id="thGrupObat" class="sortable-th">Obat</th><th id="thGrupResep" class="sortable-th">Resep</th><th id="thGrupDiberi" class="sortable-th">Diberi</th><th id="thGrupSisa" class="sortable-th">Sisa</th><th id="thGrupNoWA" class="sortable-th">No. WA</th><th id="thGrupPoli" class="sortable-th">Poli / Tanggal</th><th id="thGrupStatus" class="sortable-th">Status Pengambilan</th><th id="thGrupCatatan" class="sortable-th">Catatan</th><th>Aksi</th></tr></thead>
+            <tbody id="tableBodyGrup"></tbody>
+          </table>
+          <div class="empty-state" id="emptyStateGrup" style="display:none">Tidak ada data yang cocok.</div>
+        </div>
+        <div class="pagination" id="paginationGrup"></div>
+      </div>
+    </div>
     </div>
   </div>
 </div>
@@ -392,9 +433,25 @@ footer.note{max-width:1150px;margin:16px auto 40px;padding:0 24px;color:var(--mu
   </div>
 </div>
 
+<div class="modal-bg" id="rekapDetailModal">
+  <div class="modal" style="max-width:720px;">
+    <h3 id="rekapDetailTitle">Detail Obat</h3>
+    <p style="color:var(--muted);font-size:.82rem;">Diurutkan dari pasien yang <b>paling lama menunggu</b> di paling atas.</p>
+    <div class="table-wrap" style="max-height:50vh;overflow-y:auto;">
+      <table>
+        <thead><tr><th>Tgl Masuk</th><th>Pasien</th><th>No. RM</th><th>No. WA</th><th>Poli</th></tr></thead>
+        <tbody id="rekapDetailBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="btnCloseRekapDetail">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const el = id => document.getElementById(id);
-let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c-tLo4ULhj_2mOuNFFPg8L24n4KEUjcXjmRJNMo9-Xkwr/exec', token:'978cf3bc-6cd1-4f0d-9382-949f2d99aaa9', petugasAktif:'', petugasServahAktif:'',
+let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c-tLo4ULhj_2mOuNFFPg8L24n4KEUjcXjmRJNMo9-Xkwr/exec', token:'a7331696-8f6f-4f43-86e4-41075917d811', petugasAktif:'', petugasServahAktif:'', petugasGrupAktif:'',
   patterns: [
     { aktif:true, teks:"Assalamualaikum Bpk/Ibu/Sdr {nama}.\nKami informasikan bahwa obat {obat} {closing}\nMohon balas *SIAP* jika pesan ini sudah diterima. Terima kasih \ud83d\ude4f" },
     { aktif:true, teks:"Selamat pagi/siang/sore Bpk/Ibu {nama} \ud83d\ude4f\nBerikut info dari Farmasi RSUD AM Parikesit: obat {obat} {closing}\nBalas *OK* ya kalau info ini sudah sampai. Terima kasih" },
@@ -412,7 +469,8 @@ let cfg = { url:'https://script.google.com/macros/s/AKfycbwdtOH4kTyT9rmQ72tBzg1c
     { aktif:true, teks:"Bpk/Ibu {nama}, ini info dari Farmasi RSUD AM Parikesit ya:\nObat {obat} {closing}\nBoleh dibalas kalau sudah terima info ini. Terima kasih \ud83d\ude4f" },
     { aktif:true, teks:"Assalamualaikum Bpk/Ibu/Sdr {nama},\nSekadar mengingatkan bahwa obat {obat} {closing}\nMohon balas ya sebagai tanda sudah menerima. Terima kasih \ud83d\ude4f" }
   ],
-  closing:"tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe" };
+  closing:"sudah tersedia di Apotik Farmasi Rawat Jalan RSUD AM Parikesit, obat bisa diambil di loket penyerahan obat pada jam pelayanan:\npukul 08:00-16:00 WITA\nhari Senin s/d Jumat\nTerima kasih. \ud83d\ude4f\ud83c\udffe",
+  smsTemplate:"RSUD AM Parikesit: Obat {obat} a.n {nama} sudah bisa diambil di loket farmasi, Sen-Jum 08.00-16.00 WITA. Trims" };
 let patients = [];
 const PAGE_SIZE = 10;
 let waPage = 1;
@@ -464,17 +522,32 @@ const riwayatColumns = [
 const rekapColumns = [
   { th:'thRekapObat', label:'Nama Obat', field:'obat', type:'string' },
   { th:'thRekapJumlah', label:'Jumlah Pasien Menunggu', field:'jumlahPasien', type:'number' },
-  { th:'thRekapSisa', label:'Total Sisa Perlu Disiapkan', field:'totalSisa', type:'number' }
+  { th:'thRekapSisa', label:'Total Sisa Perlu Disiapkan', field:'totalSisa', type:'number' },
+  { th:'thRekapTgl', label:'Tgl Terlama', field:'tglTerlama', type:'string' }
 ];
 let rekapSort = { field:'jumlahPasien', dir:'desc' }; // default: obat paling banyak ditunggu di atas
 let rekapPage = 1;
 const rekapBColumns = [
   { th:'thRekapObatB', label:'Nama Obat', field:'obat', type:'string' },
   { th:'thRekapJumlahB', label:'Jumlah Pasien Menunggu', field:'jumlahPasien', type:'number' },
-  { th:'thRekapSisaB', label:'Total Perlu Disiapkan Gudang', field:'totalSisa', type:'number' }
+  { th:'thRekapSisaB', label:'Total Perlu Disiapkan Gudang', field:'totalSisa', type:'number' },
+  { th:'thRekapTglB', label:'Tgl Terlama', field:'tglTerlama', type:'string' }
 ];
 let rekapBSort = { field:'jumlahPasien', dir:'desc' };
 let rekapBPage = 1;
+const grupColumns = [
+  { th:'thGrupPasien', label:'Pasien', field:'name', type:'string' },
+  { th:'thGrupObat', label:'Obat', field:'obat', type:'string' },
+  { th:'thGrupResep', label:'Resep', field:'jmlResep', type:'number' },
+  { th:'thGrupDiberi', label:'Diberi', field:'jmlDiberikan', type:'number' },
+  { th:'thGrupSisa', label:'Sisa', field:'sisa', type:'number' },
+  { th:'thGrupNoWA', label:'No. WA', field:'wa', type:'string' },
+  { th:'thGrupPoli', label:'Poli / Tanggal', field:'poli', type:'string' },
+  { th:'thGrupStatus', label:'Status Pengambilan', field:'_pickupStatusGrup', type:'number', accessor:p=>isDiambil(p)?1:0 },
+  { th:'thGrupCatatan', label:'Catatan', field:'catatanServah', type:'string' }
+];
+let grupSort = { field:null, dir:null };
+let grupPage = 1;
 
 function applySort(rows, sortState, columns){
   if(!sortState.field) return rows;
@@ -577,8 +650,21 @@ async function bootMain(){
   await refreshAll();
 }
 
+async function fetchAllPatients(){
+  let all = [];
+  let offset = 0;
+  const chunkSize = 80;
+  while(true){
+    const r = await apiGet('getPatients', { offset: String(offset), limit: String(chunkSize) });
+    if(!r.ok) return { ok:false, error: r.error };
+    all = all.concat(r.data);
+    offset += r.limit;
+    if(offset >= r.total) break;
+  }
+  return { ok:true, data: all };
+}
 async function refreshAll(){
-  const [pRes, oRes, gRes, cRes] = await Promise.all([apiGet('getPatients'), apiGet('getObatList'), apiGet('getPetugasList'), apiGet('getClosingText')]);
+  const [pRes, oRes, gRes, cRes] = await Promise.all([fetchAllPatients(), apiGet('getObatList'), apiGet('getPetugasList'), apiGet('getClosingText')]);
   if(pRes.ok) patients = pRes.data; else alert('Gagal memuat data pasien: ' + pRes.error);
   if(oRes.ok){ obatList = oRes.data; el('obatCount').textContent = '('+obatList.length+' obat)'; }
   if(gRes.ok){ petugasList = gRes.data; }
@@ -617,6 +703,19 @@ function buildMessage(p){
   return pola.teks.replaceAll('{nama}',p.name).replaceAll('{obat}',p.obat).replaceAll('{signa}',p.signa||'').replaceAll('{closing}',cfg.closing);
 }
 function waLink(p){ return 'https://api.whatsapp.com/send?phone='+encodeURIComponent(p.wa)+'&text='+encodeURIComponent(buildMessage(p)); }
+function buildSmsMessage(p){
+  let msg = cfg.smsTemplate.replaceAll('{nama}', p.name).replaceAll('{obat}', p.obat);
+  // strip emoji/karakter non-ASCII supaya SMS tetap 1 segmen (160 char), bukan mode Unicode (70 char)
+  msg = msg.replace(/[^\x00-\x7F]/g, '');
+  if(msg.length > 160){
+    // obat kepanjangan -> potong nama obat saja, sisa teks tetap utuh
+    const maxObatLen = Math.max(10, p.obat.length - (msg.length - 157));
+    const obatSingkat = p.obat.length > maxObatLen ? p.obat.slice(0, maxObatLen).trim() + '...' : p.obat;
+    msg = cfg.smsTemplate.replaceAll('{nama}', p.name).replaceAll('{obat}', obatSingkat).replace(/[^\x00-\x7F]/g, '');
+    if(msg.length > 160) msg = msg.slice(0, 157) + '...';
+  }
+  return msg;
+}
 function isSent(p){ return !!p.dihubungi; }
 
 function renderStats(){
@@ -693,6 +792,10 @@ function renderTable(){
       <td class="row-actions">
         ${!isSent(p)?`<button class="btn-mini wa" data-send="${p.row}" ${!p.wa?'disabled':''}>Kirim WA</button>`:`<button class="btn-mini undo" data-undo="${p.row}">Batalkan</button>`}
         <button class="btn-mini undo" data-edit="${p.row}">Edit</button>
+        <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--muted);margin-top:4px;">
+          <input type="checkbox" data-toggle-sms="${p.row}" ${p.metodeKontak==='SMS'?'checked':''}> Pasien gaptek (pakai SMS)
+        </label>
+        ${p.metodeKontak==='SMS'?`<button class="btn-mini undo" data-sendsms="${p.row}" style="border-color:var(--amber);color:var(--amber-ink);">${p.smsDihubungi?'SMS terkirim '+escapeHtml(p.smsDihubungi)+' · Kirim lagi':'Kirim SMS'}</button>`:''}
       </td>
     </tr>`).join('');
   el('paginationWA').innerHTML = `
@@ -700,7 +803,7 @@ function renderTable(){
     <span>Halaman ${waPage} dari ${totalPages} (${rows.length} pasien)</span>
     <button ${waPage>=totalPages?'disabled':''} data-pagenext="wa">Berikutnya ›</button>`;
 }
-function render(){ renderStats(); renderQueue(); renderTable(); renderQueueServah(); renderTableServah(); renderRekap(); renderRekapB(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
+function render(){ renderStats(); renderQueue(); renderTable(); renderQueueServah(); renderTableServah(); renderRekap(); renderRekapB(); renderQueueGrup(); renderTableGrup(); el('footerNote').textContent = 'Data dibaca & ditulis langsung dari/ke Google Sheets kamu.'; }
 
 function isDiambil(p){ return !!p.sudahDiambil; }
 function isOverdue(p){
@@ -784,6 +887,78 @@ function renderTableServah(){
     <button ${servahPage>=totalPagesServah?'disabled':''} data-pagenext="servah">Berikutnya ›</button>`;
 }
 
+function renderQueueGrup(){
+  const board = el('queueBoardGrup');
+  const pending = patients.filter(p=>!isDiambil(p));
+  const doneCount = patients.length - pending.length;
+  if(patients.length===0){
+    board.innerHTML = `<div class="queue-empty"><div class="display">Belum ada data pasien</div><p>Muat data dulu dari tab lain.</p></div>`;
+    return;
+  }
+  if(pending.length===0){
+    board.innerHTML = `<div class="queue-count"><b>${doneCount}/${patients.length}</b><span>diambil</span></div><div class="queue-empty"><div class="display">\u2713 Semua obat sudah diserahkan</div><p>Tidak ada antrian penyerahan tersisa.</p></div>`;
+    return;
+  }
+  const p = pending[0];
+  board.innerHTML = `<div class="queue-count"><b>${doneCount}/${patients.length}</b><span>diambil</span></div>
+    <div class="queue-eyebrow">Antrian penyerahan berikutnya (via Grup WA)</div>
+    <div class="queue-name">${escapeHtml(p.name)}</div>
+    <div class="queue-meta">${p.rm?'No. RM '+escapeHtml(p.rm):''} ${p.poli?'· '+escapeHtml(p.poli):''}</div>
+    <div class="queue-obat"><b>${escapeHtml(p.obat)}</b>${p.signa?' — '+escapeHtml(p.signa):''}</div>
+    <input type="text" class="catatan-input" placeholder="Catatan (opsional): mis. obat tidak full / diambil keluarga" style="margin-top:10px;width:100%;padding:8px 10px;border-radius:8px;border:1px solid #2C5C57;background:#0F3C37;color:#EAF3F1;font-size:.82rem;">
+    <div class="queue-actions">
+      <button class="btn-send" data-diambil="${p.row}">Tandai Sudah Diambil</button>
+      <button class="btn-skip" data-skipgrup="${p.row}">Lewati dulu</button>
+    </div>`;
+}
+function renderTableGrup(){
+  const q = el('searchInputGrup').value.toLowerCase().trim();
+  const qObat = el('searchInputGrupObat').value.toLowerCase().trim();
+  const status = el('filterStatusGrup').value;
+  let rows = patients.filter(p=>{
+    if(status==='pending' && isDiambil(p)) return false;
+    if(status==='done' && !isDiambil(p)) return false;
+    if(q && !(p.name.toLowerCase().includes(q) || String(p.rm||'').toLowerCase().includes(q))) return false;
+    if(qObat && !(p.obat||'').toLowerCase().includes(qObat)) return false;
+    return true;
+  });
+  rows = applySort(rows, grupSort, grupColumns);
+  updateSortHeaders(grupColumns, grupSort);
+  el('emptyStateGrup').style.display = rows.length? 'none':'block';
+  const totalPagesGrup = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  if(grupPage > totalPagesGrup) grupPage = totalPagesGrup;
+  if(grupPage < 1) grupPage = 1;
+  const pageRowsGrup = rows.slice((grupPage-1)*PAGE_SIZE, grupPage*PAGE_SIZE);
+  el('tableBodyGrup').innerHTML = pageRowsGrup.map(p=>`
+    <tr class="${isDiambil(p)?'sent':''}">
+      <td><div class="pname">${escapeHtml(p.name)}</div><div class="psub">${p.rm?'RM '+escapeHtml(p.rm):''}</div></td>
+      <td><div>${escapeHtml(p.obat)}</div><div class="psub">${escapeHtml(p.signa)}</div></td>
+      <td class="psub">${p.jmlResep!==''&&p.jmlResep!=null?p.jmlResep:'—'}</td>
+      <td>
+        ${isDiambil(p) ? `<div class="psub">${p.jmlDiberikan!==''&&p.jmlDiberikan!=null?p.jmlDiberikan:'—'} <span title="Terkunci setelah obat diambil">🔒</span></div>` : `
+        <div class="inline-edit">
+          <input type="number" class="jmldiberikan-input" data-row="${p.row}" value="${p.jmlDiberikan!==''&&p.jmlDiberikan!=null?p.jmlDiberikan:''}" style="width:64px;">
+          <button class="btn-mini undo" data-savejmldiberikan="${p.row}">Simpan</button>
+        </div>`}
+      </td>
+      <td class="psub">${p.sisa!==''&&p.sisa!=null?p.sisa:'—'}</td>
+      <td class="pwa">${p.wa?'+'+p.wa:'—'}</td>
+      <td><div>${escapeHtml(p.poli)}</div><div class="psub">${escapeHtml(p.tgl)}</div></td>
+      <td>${isDiambil(p)?'<span class="stamp">DIAMBIL</span><div class="psub">'+escapeHtml(p.petugasServah||'')+(p.tglDiambil?' · '+escapeHtml(p.tglDiambil):'')+'</div>':'<span class="status-pill status-pending">Menunggu diambil</span>'}</td>
+      <td>
+        <div class="inline-edit">
+          <input type="text" class="catatan-servah-input" data-row="${p.row}" value="${escapeHtml(p.catatanServah||'')}" placeholder="Catatan (opsional)" style="width:150px;padding:6px 8px;border-radius:6px;border:1px solid var(--line);font-size:.76rem;">
+          <button class="btn-mini undo" data-savecatatanservah="${p.row}">Simpan</button>
+        </div>
+      </td>
+      <td>${!isDiambil(p)?`<button class="btn-mini wa" data-diambil="${p.row}">Sudah Diambil</button>`:`<button class="btn-mini undo" data-undodiambil="${p.row}">Batalkan</button>`}</td>
+    </tr>`).join('');
+  el('paginationGrup').innerHTML = `
+    <button ${grupPage<=1?'disabled':''} data-pageprev="grup">‹ Sebelumnya</button>
+    <span>Halaman ${grupPage} dari ${totalPagesGrup} (${rows.length} pasien)</span>
+    <button ${grupPage>=totalPagesGrup?'disabled':''} data-pagenext="grup">Berikutnya ›</button>`;
+}
+
 async function loadRiwayat(){
   el('emptyStateRiwayat').style.display = 'none';
   el('tableBodyRiwayat').innerHTML = '<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--muted);">Memuat riwayat...</td></tr>';
@@ -834,12 +1009,13 @@ function computeRekapObat(){
     if(isDiambil(p)) return; // hanya yang BELUM diambil yang direkap
     const key = (p.obat||'').trim();
     if(!key) return;
-    if(!map[key]) map[key] = { obat:key, jumlahPasien:0, totalSisa:0 };
+    if(!map[key]) map[key] = { obat:key, jumlahPasien:0, totalSisa:0, tglTerlama:'' };
     map[key].jumlahPasien += 1;
     const resep = Number(p.jmlResep)||0;
     const diberi = (p.jmlDiberikan!==''&&p.jmlDiberikan!=null) ? Number(p.jmlDiberikan) : 0;
     const sisaVal = (p.sisa!==''&&p.sisa!=null) ? Number(p.sisa) : (resep - diberi);
     map[key].totalSisa += isNaN(sisaVal) ? 0 : sisaVal;
+    if(p.tgl && (!map[key].tglTerlama || p.tgl < map[key].tglTerlama)) map[key].tglTerlama = p.tgl;
   });
   return Object.values(map);
 }
@@ -854,10 +1030,11 @@ function renderRekap(){
   if(rekapPage < 1) rekapPage = 1;
   const pageRows = rows.slice((rekapPage-1)*PAGE_SIZE, rekapPage*PAGE_SIZE);
   el('tableBodyRekap').innerHTML = pageRows.map(r=>`
-    <tr>
-      <td>${escapeHtml(r.obat)}</td>
+    <tr class="rekap-row" data-rekapdetail="A" data-rekapobat="${escapeHtml(r.obat)}" style="cursor:pointer;">
+      <td>${escapeHtml(r.obat)} <span class="hint">(klik untuk detail)</span></td>
       <td>${r.jumlahPasien}</td>
       <td>${r.totalSisa}</td>
+      <td>${escapeHtml(r.tglTerlama||'—')}</td>
     </tr>`).join('');
   el('paginationRekap').innerHTML = `
     <button ${rekapPage<=1?'disabled':''} data-pageprev="rekap">‹ Sebelumnya</button>
@@ -871,12 +1048,13 @@ function computeRekapObatB(){
     if(isSent(p)) return; // hanya yang BELUM dikirim notifikasi WA (grup "Menunggu")
     const key = (p.obat||'').trim();
     if(!key) return;
-    if(!map[key]) map[key] = { obat:key, jumlahPasien:0, totalSisa:0 };
+    if(!map[key]) map[key] = { obat:key, jumlahPasien:0, totalSisa:0, tglTerlama:'' };
     map[key].jumlahPasien += 1;
     const resep = Number(p.jmlResep)||0;
     const diberi = (p.jmlDiberikan!==''&&p.jmlDiberikan!=null) ? Number(p.jmlDiberikan) : 0;
     const sisaVal = (p.sisa!==''&&p.sisa!=null) ? Number(p.sisa) : (resep - diberi);
     map[key].totalSisa += isNaN(sisaVal) ? 0 : sisaVal;
+    if(p.tgl && (!map[key].tglTerlama || p.tgl < map[key].tglTerlama)) map[key].tglTerlama = p.tgl;
   });
   return Object.values(map);
 }
@@ -891,16 +1069,42 @@ function renderRekapB(){
   if(rekapBPage < 1) rekapBPage = 1;
   const pageRows = rows.slice((rekapBPage-1)*PAGE_SIZE, rekapBPage*PAGE_SIZE);
   el('tableBodyRekapB').innerHTML = pageRows.map(r=>`
-    <tr>
-      <td>${escapeHtml(r.obat)}</td>
+    <tr class="rekap-row" data-rekapdetail="B" data-rekapobat="${escapeHtml(r.obat)}" style="cursor:pointer;">
+      <td>${escapeHtml(r.obat)} <span class="hint">(klik untuk detail)</span></td>
       <td>${r.jumlahPasien}</td>
       <td>${r.totalSisa}</td>
+      <td>${escapeHtml(r.tglTerlama||'—')}</td>
     </tr>`).join('');
   el('paginationRekapB').innerHTML = `
     <button ${rekapBPage<=1?'disabled':''} data-pageprev="rekapB">‹ Sebelumnya</button>
     <span>Halaman ${rekapBPage} dari ${totalPagesRekapB} (${rows.length} jenis obat)</span>
     <button ${rekapBPage>=totalPagesRekapB?'disabled':''} data-pagenext="rekapB">Berikutnya ›</button>`;
 }
+
+function openRekapDetail(obatName, mode){
+  const filterFn = mode==='A' ? (p=>!isDiambil(p)) : (p=>!isSent(p));
+  let list = patients.filter(p => (p.obat||'').trim() === obatName && filterFn(p));
+  list = list.slice().sort((a,b)=>{
+    const ta = a.tgl||'', tb = b.tgl||'';
+    if(ta !== tb) return ta < tb ? -1 : 1; // tanggal terlama duluan
+    return a.row - b.row;
+  });
+  el('rekapDetailTitle').textContent = obatName + ' — ' + list.length + ' pasien menunggu';
+  el('rekapDetailBody').innerHTML = list.map(p=>`
+    <tr>
+      <td>${escapeHtml(p.tgl||'—')}</td>
+      <td><div class="pname">${escapeHtml(p.name)}</div></td>
+      <td>${escapeHtml(p.rm||'—')}</td>
+      <td class="pwa">${p.wa?'+'+p.wa:'—'}</td>
+      <td>${escapeHtml(p.poli||'—')}</td>
+    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Tidak ada data.</td></tr>';
+  el('rekapDetailModal').classList.add('show');
+}
+el('btnCloseRekapDetail').addEventListener('click', ()=> el('rekapDetailModal').classList.remove('show'));
+document.addEventListener('click', e=>{
+  const row = e.target.closest('tr.rekap-row');
+  if(row){ openRekapDetail(row.getAttribute('data-rekapobat'), row.getAttribute('data-rekapdetail')); }
+});
 
 async function sendAndMark(row){
   const p = patients.find(x=>String(x.row)===String(row));
@@ -916,6 +1120,24 @@ async function sendAndMark(row){
   if(!r.ok){ alert('Gagal menandai terkirim: ' + r.error); return; }
   p.dihubungi = new Date().toISOString().slice(0,10);
   p.petugasWA = cfg.petugasAktif;
+  render();
+}
+async function sendSmsAndMark(row){
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(!p) return;
+  if(!p.wa){ alert('Nomor HP pasien ini kosong, tidak bisa kirim SMS.'); return; }
+  const message = buildSmsMessage(p);
+  if(!confirm('Kirim SMS ini ke '+p.name+' ('+p.wa+')?\n\n"'+message+'"\n\n('+message.length+' karakter)')) return;
+  const r = await apiPost('sendSms', { row:p.row, phone:p.wa, message });
+  if(!r.ok){ alert('Gagal kirim SMS: ' + r.error); return; }
+  p.smsDihubungi = new Date().toISOString().slice(0,10);
+  render();
+}
+async function saveMetodeKontak(row, metode){
+  const r = await apiPost('editMetodeKontak', { row, metode });
+  if(!r.ok){ alert('Gagal menyimpan metode kontak: ' + r.error); return; }
+  const p = patients.find(x=>String(x.row)===String(row));
+  if(p){ p.metodeKontak = metode; }
   render();
 }
 async function undoSent(row){
@@ -934,18 +1156,20 @@ function skipQueue(row){
   render();
 }
 
-async function markDiambil(row, catatan){
+async function markDiambil(row, catatan, petugas, focusId){
+  petugas = petugas !== undefined ? petugas : cfg.petugasServahAktif;
+  focusId = focusId || 'fPetugasServahAktif';
   const p = patients.find(x=>String(x.row)===String(row));
   if(!p) return;
-  if(!cfg.petugasServahAktif){
+  if(!petugas){
     alert('Pilih dulu nama petugas yang menyerahkan (di bagian atas tab ini) sebelum menandai.');
-    el('fPetugasServahAktif').focus();
+    el(focusId).focus();
     return;
   }
-  const r = await apiPost('markDiambil', { row:p.row, name:p.name, obat:p.obat, petugas:cfg.petugasServahAktif, catatan: catatan||'' });
+  const r = await apiPost('markDiambil', { row:p.row, name:p.name, obat:p.obat, petugas:petugas, catatan: catatan||'' });
   if(!r.ok){ alert('Gagal menandai sudah diambil: ' + r.error); return; }
   p.sudahDiambil = true;
-  p.petugasServah = cfg.petugasServahAktif;
+  p.petugasServah = petugas;
   p.tglDiambil = new Date().toISOString().slice(0,10);
   p.catatanServah = catatan||'';
   render();
@@ -972,6 +1196,8 @@ document.addEventListener('click', e=>{
   const editRow=e.target.getAttribute('data-edit');
   const saveWaRow=e.target.getAttribute('data-savewa'), saveCatatanRow=e.target.getAttribute('data-savecatatan');
   const saveJmlRow=e.target.getAttribute('data-savejmldiberikan');
+  const sendSmsRow=e.target.getAttribute('data-sendsms');
+  if(sendSmsRow) sendSmsAndMark(sendSmsRow);
   if(editRow) openEditModal(editRow);
   if(saveWaRow){
     const row = e.target.closest('tr');
@@ -994,7 +1220,9 @@ document.addEventListener('click', e=>{
   if(diambil){
     const container = e.target.closest('tr') || e.target.closest('.queue-board');
     const catatanInput = container ? container.querySelector('.catatan-input, .catatan-servah-input') : null;
-    markDiambil(diambil, catatanInput ? catatanInput.value.trim() : '');
+    const isGrupContext = !!e.target.closest('#tabGrup');
+    if(isGrupContext) markDiambil(diambil, catatanInput ? catatanInput.value.trim() : '', cfg.petugasGrupAktif, 'fPetugasGrupAktif');
+    else markDiambil(diambil, catatanInput ? catatanInput.value.trim() : '', cfg.petugasServahAktif, 'fPetugasServahAktif');
   }
   const saveCatatanServahRow = e.target.getAttribute('data-savecatatanservah');
   if(saveCatatanServahRow){
@@ -1004,6 +1232,8 @@ document.addEventListener('click', e=>{
   }
   if(undoDiambil) undoDiambilAction(undoDiambil);
   if(skipServah) skipQueueServah(skipServah);
+  const skipGrup = e.target.getAttribute('data-skipgrup');
+  if(skipGrup) skipQueueServah(skipGrup);
 });
 el('searchInput').addEventListener('input', ()=>{ waPage=1; renderTable(); });
 el('searchInputNama').addEventListener('input', ()=>{ waPage=1; renderTable(); });
@@ -1014,6 +1244,7 @@ wireSortHeaders(servahColumns, servahSort, renderTableServah, ()=>{ servahPage=1
 wireSortHeaders(riwayatColumns, riwayatSort, renderRiwayat, ()=>{ riwayatPage=1; });
 wireSortHeaders(rekapColumns, rekapSort, renderRekap, ()=>{ rekapPage=1; });
 wireSortHeaders(rekapBColumns, rekapBSort, renderRekapB, ()=>{ rekapBPage=1; });
+wireSortHeaders(grupColumns, grupSort, renderTableGrup, ()=>{ grupPage=1; });
 el('searchInputServah').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
 el('searchInputServahObat').addEventListener('input', ()=>{ servahPage=1; renderTableServah(); });
 el('filterStatusServah').addEventListener('change', ()=>{ servahPage=1; renderTableServah(); });
@@ -1030,9 +1261,19 @@ document.addEventListener('click', e=>{
   if(next==='rekap'){ rekapPage++; renderRekap(); }
   if(prev==='rekapB'){ rekapBPage--; renderRekapB(); }
   if(next==='rekapB'){ rekapBPage++; renderRekapB(); }
+  if(prev==='grup'){ grupPage--; renderTableGrup(); }
+  if(next==='grup'){ grupPage++; renderTableGrup(); }
+});
+document.addEventListener('change', e=>{
+  const toggleRow = e.target.getAttribute('data-toggle-sms');
+  if(toggleRow) saveMetodeKontak(toggleRow, e.target.checked ? 'SMS' : 'WA');
 });
 el('searchRekapObat').addEventListener('input', ()=>{ rekapPage=1; renderRekap(); });
 el('searchRekapObatB').addEventListener('input', ()=>{ rekapBPage=1; renderRekapB(); });
+el('searchInputGrup').addEventListener('input', ()=>{ grupPage=1; renderTableGrup(); });
+el('searchInputGrupObat').addEventListener('input', ()=>{ grupPage=1; renderTableGrup(); });
+el('filterStatusGrup').addEventListener('change', ()=>{ grupPage=1; renderTableGrup(); });
+el('btnClearFilterGrup').addEventListener('click', ()=>{ el('searchInputGrup').value=''; el('searchInputGrupObat').value=''; el('filterStatusGrup').value='all'; grupPage=1; renderTableGrup(); });
 el('searchRiwayatNama').addEventListener('input', ()=>{ riwayatPage=1; renderRiwayat(); });
 el('searchRiwayatDari').addEventListener('change', ()=>{ riwayatPage=1; renderRiwayat(); });
 el('searchRiwayatSampai').addEventListener('change', ()=>{ riwayatPage=1; renderRiwayat(); });
@@ -1045,7 +1286,7 @@ document.querySelectorAll('.tab-btn-header').forEach(btn=>{
     document.querySelectorAll('.tab-btn-header').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
-    const tabIdMap = { wa:'tabWA', serah:'tabServah', riwayat:'tabRiwayat', rekap:'tabRekap', rekapB:'tabRekapB' };
+    const tabIdMap = { wa:'tabWA', serah:'tabServah', riwayat:'tabRiwayat', rekap:'tabRekap', rekapB:'tabRekapB', grup:'tabGrup' };
     el(tabIdMap[btn.dataset.tab]).classList.add('active');
     if(btn.dataset.tab === 'riwayat' && riwayatData === null) loadRiwayat();
     if(btn.dataset.tab === 'rekapB') renderRekapB();
@@ -1135,7 +1376,22 @@ acPetugasServahList.addEventListener('click', e=>{
   const v = e.target.getAttribute('data-val');
   if(v){ fPetugasServahAktif.value = v; cfg.petugasServahAktif = v; saveCfg(); acPetugasServahList.style.display='none'; }
 });
-document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')){ acList.style.display='none'; acPetugasList.style.display='none'; acPetugasServahList.style.display='none'; } });
+
+// autocomplete petugas penyerahan via Grup WA
+const fPetugasGrupAktif = el('fPetugasGrupAktif'), acPetugasGrupList = el('acPetugasGrupList');
+fPetugasGrupAktif.addEventListener('input', ()=>{
+  const q = fPetugasGrupAktif.value.toLowerCase().trim();
+  cfg.petugasGrupAktif = '';
+  if(!q){ acPetugasGrupList.style.display='none'; return; }
+  const matches = petugasList.filter(o=>o.toLowerCase().includes(q)).slice(0,20);
+  acPetugasGrupList.innerHTML = matches.map(o=>`<div data-val="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join('');
+  acPetugasGrupList.style.display = matches.length ? 'block':'none';
+});
+acPetugasGrupList.addEventListener('click', e=>{
+  const v = e.target.getAttribute('data-val');
+  if(v){ fPetugasGrupAktif.value = v; cfg.petugasGrupAktif = v; saveCfg(); acPetugasGrupList.style.display='none'; }
+});
+document.addEventListener('click', e=>{ if(!e.target.closest('.autocomplete')){ acList.style.display='none'; acPetugasList.style.display='none'; acPetugasServahList.style.display='none'; acPetugasGrupList.style.display='none'; } });
 
 el('btnAddPatient').addEventListener('click', async ()=>{
   const msg = el('addMsg'); msg.className='status-msg';
